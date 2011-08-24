@@ -24,11 +24,9 @@ public class RWEntityListener extends EntityListener
     {
         if(!event.isCancelled()) //damage event is not cancelled
         {
-            if(RWDebug.getDebug()) {Bukkit.getServer().broadcastMessage("Damage event hasn't been cancelled");}
             Entity target = event.getEntity(); //get entity of the damage event
             if(!(target instanceof Player)) //if the entity is not a player
             {
-                if(RWDebug.getDebug()) {Bukkit.getServer().broadcastMessage("Entity hit is not a player");}
                 DamageCause damager = target.getLastDamageCause().getCause(); //get cause of the last damage caused
                 if(damager == DamageCause.PROJECTILE) //if the cause was a projectile
                 {
@@ -46,20 +44,27 @@ public class RWEntityListener extends EntityListener
                             if(isPlayerInArena(player)) //shooter is in an arena match
                             {
                                 if(RWDebug.getDebug()) {Bukkit.getServer().broadcastMessage("Shooter is in an arena");}
-                                if(target instanceof LivingEntity) //if the target is a living entity
+                                if(!(RangedWolvesOwner.getPets(player) == null)) //if the shooter has pets
                                 {
                                     if(RWDebug.getDebug()) {Bukkit.getServer().broadcastMessage("Entity hit is a Living Entity");}
-                                    LivingEntity newTarget = (LivingEntity)target; //make it a living entity
-                                    for(Wolf w : RangedWolvesOwner.getPets(player)) //for each wolf pet the player has
+                                    if(target instanceof LivingEntity) //if the target is a living entity
                                     {
-                                        if(RWDebug.getDebug()) {Bukkit.getServer().broadcastMessage("Wolf ID# " + w.getEntityId());}
-                                        w.setTarget(newTarget); //set the target of the wolf to the damaged target
-                                        if(RWDebug.getDebug()) {Bukkit.getServer().broadcastMessage("Target set as: " + newTarget.getEntityId());}
+                                        LivingEntity newTarget = (LivingEntity)target; //make it a living entity
+                                        for(Wolf w : RangedWolvesOwner.getPets(player)) //for each wolf pet the player has
+                                        {
+                                            if(RWDebug.getDebug()) {Bukkit.getServer().broadcastMessage("Wolf ID# " + w.getEntityId());}
+                                            w.setTarget(newTarget); //set the target of the wolf to the damaged target
+                                            if(RWDebug.getDebug()) {Bukkit.getServer().broadcastMessage("Target set as: " + newTarget.getEntityId());}
+                                        }
+                                    }
+                                    else //target is a regular entity (sign/painting/etc)
+                                    {
+                                        return; //ignore
                                     }
                                 }
-                                else //target is a regular entity (sign/painting/etc)
+                                else //if the shooter has no pets
                                 {
-                                    //if(RWDebug.getDebug()) {Bukkit.getServer().broadcastMessage("Entity hit is a regular Entity (sign/painting/etc)");}
+                                    if(RWDebug.getDebug()) {Bukkit.getServer().broadcastMessage("Shooter has no pets");}
                                     return; //ignore
                                 }
                             }
@@ -71,25 +76,21 @@ public class RWEntityListener extends EntityListener
                         }
                         else //if the shooter is a monster (skeleton/boss)
                         {
-                            //if(RWDebug.getDebug()) {Bukkit.getServer().broadcastMessage("Shooter of the projectile is NOT a Player");}
                             return; //ignore
                         }
                     }
                     else //entity is not a projectile
                     {
-                        //if(RWDebug.getDebug()) {Bukkit.getServer().broadcastMessage("Damaging Entity is NOT a projectile");}
                         return; //ignore
                     }
                 }
                 else //if it's anything other than a projectile
                 {
-                    //if(RWDebug.getDebug()) {Bukkit.getServer().broadcastMessage("Entity damage NOT due to a projectile");}
                     return; //ignore
                 }
             }
             else //entity hit is a player
             {
-                //if(RWDebug.getDebug()) {Bukkit.getServer().broadcastMessage("Entity hit IS a player");}
                 return; //ignore
             }
         }

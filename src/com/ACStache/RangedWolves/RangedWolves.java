@@ -22,16 +22,22 @@ public class RangedWolves extends JavaPlugin
     private Logger log = Logger.getLogger("Minecraft");
     private PluginDescriptionFile info;
     private final RWEntityListener entityListener = new RWEntityListener(this);
+    private MobArena MobArena;
+    private final RWArenaListener arenaListener = new RWArenaListener(MobArena);
 
     public void onEnable()
     {
         RWDebug.setDebug(false);
+        
+        setupMobArenaHandler();
         
         info = getDescription();
         log.info("[" + info.getName() + "] " + info.getVersion() + " Enabled successfully! By " + info.getAuthors());
         
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvent(Event.Type.ENTITY_DAMAGE, entityListener, Priority.Monitor, this);
+        //pm.registerEvent(Event.Type.CUSTOM_EVENT, arenaListener, Priority.Normal, this);
+        //this event breaks the plugin, although it is broken without it as well, just without errors
     }
 
     public void onDisable()
@@ -66,9 +72,9 @@ public class RangedWolves extends JavaPlugin
                 else if(args[0].equalsIgnoreCase("get"))
                 {
                     if(RWDebug.getDebug())
-                        ((Player)sender).sendMessage("DEBUG MODE ACTIVE");
+                        ((Player)sender).sendMessage("DEBUG MODE IS ACTIVE");
                     else
-                        ((Player)sender).sendMessage("DEBUG MODE INACTIVE");
+                        ((Player)sender).sendMessage("DEBUG MODE IS NOT ACTIVE");
                 }
                 else
                 {
@@ -77,7 +83,7 @@ public class RangedWolves extends JavaPlugin
             }
             else
             {
-                log.info("[RangedWolves] You can't use that command from the console");
+                log.info("[RangedWolves] You can't use Ranged Wolves commands from the console");
             }
         }
         return true;
