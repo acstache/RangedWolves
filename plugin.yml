@@ -1,6 +1,6 @@
 name: RangedWolves
 main: com.ACStache.RangedWolves.RangedWolves
-version: 0.1c-DEBUG
+version: 0.2-Debug
 author: ACStache
 description: Make Wolves attack your target on Ranged Attacks, IF in a Mob Arena
 soft-depend: [MobArena]
