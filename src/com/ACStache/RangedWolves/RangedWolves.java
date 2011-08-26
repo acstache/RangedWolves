@@ -36,6 +36,7 @@ public class RangedWolves extends JavaPlugin
         log.info("[" + info.getName() + "] " + info.getVersion() + " Enabled successfully! By " + info.getAuthors());
         
         PluginManager pm = getServer().getPluginManager();
+        pm.registerEvent(Event.Type.CREATURE_SPAWN, entityListener, Priority.Monitor, this);
         pm.registerEvent(Event.Type.ENTITY_DAMAGE, entityListener, Priority.Monitor, this);
         pm.registerEvent(Event.Type.ENTITY_DEATH, entityListener, Priority.Monitor, this);
         pm.registerEvent(Event.Type.ENTITY_TAME, entityListener, Priority.Monitor, this);

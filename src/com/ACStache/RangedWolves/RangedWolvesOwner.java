@@ -43,10 +43,10 @@ public class RangedWolvesOwner
     {
         if(arenaMap.get(arena) == null) //arena not found
         {
-            arenaMap.put(arena, new HashMap<Player, List<Wolf>>());
             if(arenaWolfMap.get(player) == null) //player not found in the arena (always true on just making a new arena key)
             {
                 arenaWolfMap.put(player, new LinkedList<Wolf>());
+                arenaMap.put(arena, arenaWolfMap);
                 arenaMap.get(arena).get(player).add(wolf);
             }
         }
@@ -70,6 +70,27 @@ public class RangedWolvesOwner
     public static void removeWolf(Player player, Wolf wolf)
     {
         tamedWolfMap.get(player).remove(wolf);
+    }
+    
+    /**
+     * checks a wolf versus all wolves that have been tamed & attached to a player
+     * @param wolf the wolf being checked
+     * @return true or false
+     */
+    public static Boolean checkWolf(Wolf wolf)
+    {
+        Boolean check = false;
+        for(Player p : tamedWolfMap.keySet()) //for each player in the set of keys
+        {
+            for(Wolf w : tamedWolfMap.get(p)) //check each wolf per player
+            {
+                if(w.equals(wolf)) //if a wolf in the list equals the wolf in question
+                    check = true; 
+                else
+                    check = false;
+            }
+        }
+        return check;
     }
     
     /**
