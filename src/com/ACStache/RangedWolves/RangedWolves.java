@@ -3,6 +3,7 @@ package com.ACStache.RangedWolves;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -22,8 +23,8 @@ public class RangedWolves extends JavaPlugin
     private Logger log = Logger.getLogger("Minecraft");
     private PluginDescriptionFile info;
     private final RWEntityListener entityListener = new RWEntityListener(this);
-    private MobArena MobArena;
-    private final RWArenaListener arenaListener = new RWArenaListener(MobArena);
+    @SuppressWarnings("unused")
+    private RWArenaListener arenaListener;
 
     public void onEnable()
     {
@@ -36,8 +37,8 @@ public class RangedWolves extends JavaPlugin
         
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvent(Event.Type.ENTITY_DAMAGE, entityListener, Priority.Monitor, this);
-        //pm.registerEvent(Event.Type.CUSTOM_EVENT, arenaListener, Priority.Normal, this);
-        //this event breaks the plugin, although it is broken without it as well, just without errors
+        pm.registerEvent(Event.Type.ENTITY_DEATH, entityListener, Priority.Monitor, this);
+        pm.registerEvent(Event.Type.ENTITY_TAME, entityListener, Priority.Monitor, this);
     }
 
     public void onDisable()
@@ -53,28 +54,23 @@ public class RangedWolves extends JavaPlugin
             return;
         
         maHandler = new MobArenaHandler();
+        arenaListener = new RWArenaListener();
     }
     
+    //used solely for the debug command
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
     {
         if(command.getName().equalsIgnoreCase("rw"))
         {
-            if(sender instanceof Player && ((Player)sender).isOp())
+            if((sender instanceof Player && ((Player)sender).isOp()) || !(sender instanceof Player))
             {
                 if(args[0].equalsIgnoreCase("debug"))
                 {
                     RWDebug.setDebug(!(RWDebug.getDebug()));
                     if(RWDebug.getDebug())
-                        ((Player)sender).sendMessage("Debug Mode Activated");
+                        ((Player)sender).sendMessage(ChatColor.AQUA + "Debug Mode Activated");
                     else
-                        ((Player)sender).sendMessage("Debug Mode Deactivated");
-                }
-                else if(args[0].equalsIgnoreCase("get"))
-                {
-                    if(RWDebug.getDebug())
-                        ((Player)sender).sendMessage("DEBUG MODE IS ACTIVE");
-                    else
-                        ((Player)sender).sendMessage("DEBUG MODE IS NOT ACTIVE");
+                        ((Player)sender).sendMessage(ChatColor.AQUA + "Debug Mode Deactivated");
                 }
                 else
                 {
@@ -83,7 +79,7 @@ public class RangedWolves extends JavaPlugin
             }
             else
             {
-                log.info("[RangedWolves] You can't use Ranged Wolves commands from the console");
+                ((Player)sender).sendMessage("You don't have permission to do that");
             }
         }
         return true;
