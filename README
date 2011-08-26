@@ -1,6 +1,4 @@
 Simply put this into your plugins folder, and it will do it's magic!
 Makes wolves from Mob Arena attack your target when you attack at range.
-If you're not in an arena, it will not work.
-If your target is another player, it will not work.
-If you use a bow & arrow, egg, or snowball, it *should* work.
-    I have not tested with eggs or snowballs.
+Makes wolves you've tamed also attack on your projectile strikes.
+Any wolves spawned with you as the owner do not work in this fashion.
