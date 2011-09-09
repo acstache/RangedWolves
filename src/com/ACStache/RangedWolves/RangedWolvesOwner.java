@@ -28,9 +28,7 @@ public class RangedWolvesOwner
             tamedWolfMap.get(player).add(wolf);
         }
         else
-        {
             tamedWolfMap.get(player).add(wolf);
-        }
     }
     
     /**
@@ -112,6 +110,6 @@ public class RangedWolvesOwner
      */
     public static void clearWolves(Arena arena)
     {
-        arenaMap.get(arena).clear();
+    	arenaMap.get(arena).clear();
     }
 }
