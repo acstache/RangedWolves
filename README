@@ -1,4 +1,5 @@
 Simply put this into your plugins folder, and it will do it's magic!
 Makes wolves from Mob Arena attack your target when you attack at range.
 Makes wolves you've tamed also attack on your projectile strikes.
-Any wolves spawned with you as the owner do not work in this fashion.
+Makes wolves spawned with you set as the owner also attack.
+Partially retroactive, doesn't work well at the moment.
