@@ -1,8 +1,8 @@
 package com.ACStache.RangedWolves;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
@@ -11,24 +11,25 @@ import com.garbagemule.MobArena.Arena;
 
 public class RWOwner
 {
-    private static HashMap<Arena, HashMap<Player, List<Wolf>>> arenaMap = new HashMap<Arena,HashMap<Player,List<Wolf>>>();
-    private static HashMap<Player, List<Wolf>> arenaWolfMap = new HashMap<Player,List<Wolf>>();
-    private static HashMap<Player,List<Wolf>> tamedWolfMap = new HashMap<Player,List<Wolf>>();
+    private static HashMap<Arena,HashMap<String,Set<Wolf>>> arenaMap = new HashMap<Arena,HashMap<String,Set<Wolf>>>();
+    private static HashMap<String,Set<Wolf>> arenaWolfMap = new HashMap<String,Set<Wolf>>();
+    private static HashMap<String,Set<Wolf>> tamedWolfMap = new HashMap<String,Set<Wolf>>();
     
     /**
-     * method to add wolves from onTameEntity event
-     * @param player the player who did the taming
-     * @param wolf the wolf that got tamed
+     * method to add wolves from onTameEntity and onCreatureSpawn events
+     * @param player the player who gets the wolf
+     * @param wolf the wolf in question
      */
     public static void addWolf(Player player, Wolf wolf)
     {
-        if(tamedWolfMap.get(player) == null)
+        String playerName = player.getName();
+        if(tamedWolfMap.get(playerName) == null)
         {
-            tamedWolfMap.put(player, new LinkedList<Wolf>());
-            tamedWolfMap.get(player).add(wolf);
+            tamedWolfMap.put(playerName, new HashSet<Wolf>());
+            tamedWolfMap.get(playerName).add(wolf);
         }
         else
-            tamedWolfMap.get(player).add(wolf);
+            tamedWolfMap.get(playerName).add(wolf);
     }
     
     /**
@@ -39,21 +40,22 @@ public class RWOwner
      */
     public static void addWolf(Arena arena, Player player, Wolf wolf)
     {
+        String playerName = player.getName();
         if(arenaMap.get(arena) == null) //arena not found
         {
-            if(arenaWolfMap.get(player) == null) //player not found in the arena (always true on just making a new arena key)
+            if(arenaWolfMap.get(playerName) == null) //player not found in the arena (always true on just making a new arena key)
             {
-                arenaWolfMap.put(player, new LinkedList<Wolf>());
+                arenaWolfMap.put(playerName, new HashSet<Wolf>());
                 arenaMap.put(arena, arenaWolfMap);
-                arenaMap.get(arena).get(player).add(wolf);
+                arenaMap.get(arena).get(playerName).add(wolf);
             }
         }
         else
         {
-            if(arenaWolfMap.get(player) == null) //player not found in the arena
+            if(arenaWolfMap.get(playerName) == null) //player not found in the arena
             {
-                arenaWolfMap.put(player, new LinkedList<Wolf>());
-                arenaMap.get(arena).get(player).add(wolf);
+                arenaWolfMap.put(playerName, new HashSet<Wolf>());
+                arenaMap.get(arena).get(playerName).add(wolf);
             }
             else
                 arenaMap.get(arena).get(player).add(wolf);
@@ -61,53 +63,39 @@ public class RWOwner
     }
     
     /**
-     * method to remove a wolf from a player's list of pets if it dies
+     * method to remove a wolf from a player's list of wolves if it dies
      * @param player the player who just lost a pet
      * @param wolf the wolf that just died
      */
     public static void removeWolf(Player player, Wolf wolf)
     {
-        tamedWolfMap.get(player).remove(wolf);
+        tamedWolfMap.get(player.getName()).remove(wolf);
     }
     
     /**
-     * checks a wolf versus all wolves that have been tamed & attached to a player
+     * checks a wolf versus all wolves that have been attached to a player
      * @param wolf the wolf being checked
      * @return true or false
      */
-    public static Boolean checkArenaWolf(Wolf wolf)
+    public static boolean checkArenaWolf(Wolf wolf)
     {
-        int entityID = wolf.getEntityId();
-        Boolean check = false;
-        for(Player p : arenaWolfMap.keySet()) //for each player in the set of keys
-        {
-            for(Wolf w : arenaWolfMap.get(p)) //check each wolf per player
-            {
-                if(w.getEntityId() == entityID) //if a wolf in the list equals the wolf in question
-                    check = true;
-            }
-        }
-        return check;
+        for(Set<Wolf> set : arenaWolfMap.values()) //for each set of wolves
+            if(set.contains(wolf)) //if the set contains the wolf
+                return true; 
+        return false;
     }
     
     /**
-     * checks a wolf versus all wolves that have been tamed & attached to a player
+     * checks a wolf versus all wolves that have been attached to a player
      * @param wolf the wolf being checked
      * @return true or false
      */
-    public static Boolean checkWorldWolf(Wolf wolf)
+    public static boolean checkWorldWolf(Wolf wolf)
     {
-        int entityID = wolf.getEntityId();
-        Boolean check = false;
-        for(Player p : tamedWolfMap.keySet()) //for each player in the set of keys
-        {
-            for(Wolf w : tamedWolfMap.get(p)) //check each wolf per player
-            {
-                if(w.getEntityId() == entityID) //if a wolf in the list equals the wolf in question
-                    check = true; 
-            }
-        }
-        return check;
+        for(Set<Wolf> set : tamedWolfMap.values()) //for each set of wolves
+            if(set.contains(wolf)) //if the set contains the wolf
+                return true; 
+        return false;
     }
     
     /**
@@ -115,12 +103,12 @@ public class RWOwner
      * @param player the owner of the pets
      * @return the list of pets of the player
      */
-    public static List<Wolf> getPets(Player player)
+    public static Set<Wolf> getPets(Player player)
     {
         if(RWArenaChecker.isPlayerInArena(player)) //if player is in an arena match
-            return arenaWolfMap.get(player);
+            return arenaWolfMap.get(player.getName());
         else //if player is NOT in an arena match
-            return tamedWolfMap.get(player);
+            return tamedWolfMap.get(player.getName());
     }
     
     /**

@@ -5,9 +5,11 @@ import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
 import org.bukkit.event.Event;
@@ -63,6 +65,20 @@ public class RangedWolves extends JavaPlugin
                 log.info("[" + info.getName() + "] Config is missing pieces, generating a default config");
                 config.getAll().clear();
                 RWConfig.initConfig(file);
+            }
+        }
+        
+        for(World w : Bukkit.getServer().getWorlds())
+        {
+            for(LivingEntity e : w.getLivingEntities())
+            {
+                if(e instanceof Wolf)
+                {
+                    Wolf wolf = (Wolf)e;
+                    Player owner = (Player)wolf.getOwner();
+                    if(owner != null)
+                        RWOwner.addWolf(owner, wolf);
+                }
             }
         }
         

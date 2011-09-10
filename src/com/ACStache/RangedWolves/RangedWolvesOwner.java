@@ -9,7 +9,7 @@ import org.bukkit.entity.Wolf;
 
 import com.garbagemule.MobArena.Arena;
 
-public class RangedWolvesOwner
+public class RWOwner
 {
     private static HashMap<Arena, HashMap<Player, List<Wolf>>> arenaMap = new HashMap<Arena,HashMap<Player,List<Wolf>>>();
     private static HashMap<Player, List<Wolf>> arenaWolfMap = new HashMap<Player,List<Wolf>>();
@@ -75,17 +75,36 @@ public class RangedWolvesOwner
      * @param wolf the wolf being checked
      * @return true or false
      */
-    public static Boolean checkWolf(Wolf wolf)
+    public static Boolean checkArenaWolf(Wolf wolf)
     {
+        int entityID = wolf.getEntityId();
+        Boolean check = false;
+        for(Player p : arenaWolfMap.keySet()) //for each player in the set of keys
+        {
+            for(Wolf w : arenaWolfMap.get(p)) //check each wolf per player
+            {
+                if(w.getEntityId() == entityID) //if a wolf in the list equals the wolf in question
+                    check = true;
+            }
+        }
+        return check;
+    }
+    
+    /**
+     * checks a wolf versus all wolves that have been tamed & attached to a player
+     * @param wolf the wolf being checked
+     * @return true or false
+     */
+    public static Boolean checkWorldWolf(Wolf wolf)
+    {
+        int entityID = wolf.getEntityId();
         Boolean check = false;
         for(Player p : tamedWolfMap.keySet()) //for each player in the set of keys
         {
             for(Wolf w : tamedWolfMap.get(p)) //check each wolf per player
             {
-                if(w.equals(wolf)) //if a wolf in the list equals the wolf in question
+                if(w.getEntityId() == entityID) //if a wolf in the list equals the wolf in question
                     check = true; 
-                else
-                    check = false;
             }
         }
         return check;
@@ -110,6 +129,6 @@ public class RangedWolvesOwner
      */
     public static void clearWolves(Arena arena)
     {
-    	arenaMap.get(arena).clear();
+        arenaMap.get(arena).clear();
     }
 }

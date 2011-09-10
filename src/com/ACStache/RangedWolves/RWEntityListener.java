@@ -1,6 +1,6 @@
 package com.ACStache.RangedWolves;
 
-import java.util.LinkedList;
+import java.util.HashSet;
 
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -61,7 +61,8 @@ public class RWEntityListener extends EntityListener
         {
             //get the arena the player is in & the player's pets
             Arena arena = RangedWolves.am.getArenaWithPlayer(player);
-            LinkedList<Wolf> pets = (LinkedList<Wolf>)RWOwner.getPets(player);
+            //boolean arenaPvP = arena.isPvpEnabled(); //uncomment if using dev build of Mob Arena
+            HashSet<Wolf> pets = (HashSet<Wolf>)RWOwner.getPets(player);
             
             //if RW is not allowed in the arena, exit
             if(!RWConfig.RWinArena(arena)) {return;}
@@ -75,7 +76,28 @@ public class RWEntityListener extends EntityListener
                 //if it has an owner
                 if(RWOwner.checkArenaWolf(wolf))
                 {
-                    event.setCancelled(true);
+                    //if the player is the wolf's owner
+                    if(player == (Player)wolf.getOwner())
+                    {
+                        event.setCancelled(true);
+                    }
+                    //if the wolf has an owner other than the player
+                    else
+                    {
+                        event.setCancelled(true);
+                        //uncomment below if using dev build of Mob Arena and remove above event cancel
+                        /* //if arena pvp is enabled
+                        if(arenaPvP)
+                        {
+                            //set wolf as your wolves' target
+                            setArenaTarget(pets, newTarget);
+                        }
+                        //else if arena pvp is disabled
+                        else
+                        {
+                            event.setCancelled(true);
+                        }*/
+                    }
                 }
                 //wolf is not a pet
                 else
@@ -86,10 +108,28 @@ public class RWEntityListener extends EntityListener
             //else if the target is a player
             else if(newTarget instanceof Player)
             {
-                //TODO bug garbagemule about getting per Arena PvP settings
-                //TODO incorporate per Arena PvP settings into wolf target code
-                //using "arena.pvp;" gets "The field Arena.pvp is not visible" as an error
                 return;
+                //uncomment below if using dev build of Mob Arena and remove above return statement
+                /* //if you manage to shoot yourself
+                if(player == (Player)newTarget)
+                {
+                    event.setCancelled(true);
+                }
+                //if you shoot another player
+                else
+                {
+                    //if arena pvp is enabled
+                    if(arenaPvP)
+                    {
+                        //set player as your wolves' target
+                        setArenaTarget(pets, newTarget);
+                    }
+                    //else if arena pvp is disabled
+                    else
+                    {
+                        event.setCancelled(true);
+                    }
+                }*/
             }
             //else the target is not a wolf or player
             else
@@ -102,7 +142,7 @@ public class RWEntityListener extends EntityListener
         {
             //get the player's pets, world, and world's pvp 
             World world = player.getWorld();
-            LinkedList<Wolf> pets = (LinkedList<Wolf>)RWOwner.getPets(player);
+            HashSet<Wolf> pets = (HashSet<Wolf>)RWOwner.getPets(player);
             boolean worldPvP = world.getPVP();
             
             //if RW not allowed in world, exit
@@ -160,7 +200,7 @@ public class RWEntityListener extends EntityListener
         }
     }
     
-    public void setArenaTarget(LinkedList<Wolf> pets, LivingEntity target)
+    public void setArenaTarget(HashSet<Wolf> pets, LivingEntity target)
     {
         //if player doesn't have pets, exit
         if(pets == null) {return;}
@@ -183,7 +223,7 @@ public class RWEntityListener extends EntityListener
             }
         }
     }
-    public void setWorldTarget(LinkedList<Wolf> pets, LivingEntity target)
+    public void setWorldTarget(HashSet<Wolf> pets, LivingEntity target)
     {
         //if player doesn't have pets, exit
         if(pets == null) {return;}
@@ -220,7 +260,7 @@ public class RWEntityListener extends EntityListener
             Player owner = (Player)wolf.getOwner();
             if(owner != null)
             {
-                if(!(RWArenaChecker.isPlayerInArena(owner))) 
+                if(RangedWolves.am.getArenaWithPet(wolf) == null) //if the wolf that died is not in an arena
                 {
                     if(RWOwner.checkWorldWolf(wolf))
                     {
@@ -239,14 +279,13 @@ public class RWEntityListener extends EntityListener
         {
             Wolf wolf = (Wolf)spawn;
             Player owner = (Player)wolf.getOwner();
-            if(owner != null)
+            if(owner != null) //if there is an owner
             {
-                if(!(RWArenaChecker.isPlayerInArena(owner)))
+                if(RangedWolves.am.getArenaWithPet(wolf) == null) //if the wolf isn't spawned in an arena
                 {
-                    if(!RWOwner.checkWorldWolf(wolf))
+                    if(!RWOwner.checkWorldWolf(wolf)) //if it's not already associated
                     {
-                        RWOwner.addWolf(owner, wolf);
-                        owner.sendMessage(ChatColor.AQUA + "RW: You've been given a wolf");
+                        RWOwner.addWolf(owner, wolf); //add it
                     }
                 }
             }
