@@ -1,5 +1,5 @@
 Simply put this into your plugins folder, and it will do it's magic!
+    In the configuration, all worlds/arenas default to true. Simply change any to false if you want
 Makes wolves from Mob Arena attack your target when you attack at range.
-Makes wolves you've tamed also attack on your projectile strikes.
-Makes wolves spawned with you set as the owner also attack.
-Partially retroactive, doesn't work well at the moment.
+Makes wolves you have previously tamed and any wolves you end up taming attack targets as well
+    This is for outside of Mob Arenas. They do not help if you're in an arena.
