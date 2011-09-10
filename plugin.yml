@@ -1,12 +1,12 @@
 name: RangedWolves
 main: com.ACStache.RangedWolves.RangedWolves
-version: 0.5
+version: 0.6
 author: ACStache
 description: Make Wolves attack your target on Ranged Attacks
 softdepend: [MobArena]
 commands:
     rw:
-        description: toggle debug mode on/off [currently unimplemented]
+        description: reload the config or activate older wolves
         usage: |
                /rw debug
                /rw reload
