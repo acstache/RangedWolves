@@ -51,12 +51,12 @@ public class RangedWolves extends JavaPlugin
         }
         else
         {
-        	Configuration config = new Configuration(file);
-        	config.load();
+            Configuration config = new Configuration(file);
+            config.load();
             if(config.getKeys("RW-on-Server") != null)
             {
                 RWConfig.loadConfig(file);
-                log.info("[" + info.getName() + "] Config loaded successfully!");
+                log.info("[" + info.getName() + "] Config loaded");
             }
             else
             {
@@ -86,8 +86,7 @@ public class RangedWolves extends JavaPlugin
     {
         Plugin maPlugin = (MobArena)Bukkit.getServer().getPluginManager().getPlugin("MobArena");
         
-        if(maPlugin == null)
-            return;
+        if(maPlugin == null) { return; }
         
         maHandler = new MobArenaHandler();
         arenaListener = new RWArenaListener();
@@ -143,12 +142,12 @@ public class RangedWolves extends JavaPlugin
                         if(e instanceof Wolf)
                         {
                             Wolf wolf = (Wolf)e;
-                            if(!RangedWolvesOwner.checkWolf(wolf)) //if wolf is not part of the known pets
+                            if(!RWOwner.checkWorldWolf(wolf)) //if wolf is not part of the known pets
                             {
                                 Player owner = (Player)wolf.getOwner();
                                 if(owner != null) //wolf has an owner
                                 {
-                                    RangedWolvesOwner.addWolf(owner, wolf);
+                                    RWOwner.addWolf(owner, wolf);
                                     wolvesAdded++;
                                 }
                             }

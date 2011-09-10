@@ -21,7 +21,7 @@ public class RWArenaListener extends MobArenaListener
             {
                 if(!(arena.getPets() == null)) //if there are pets in the arena
                     for (Wolf w : arena.getPets()) //for all pet wolves in the arena
-                        RangedWolvesOwner.addWolf(arena, (Player)w.getOwner(), w); //attach the wolf to the owner
+                        RWOwner.addWolf(arena, (Player)w.getOwner(), w); //attach the wolf to the owner
                 else //if there are no pets in the arena
                     return; //ignore
             }
@@ -33,6 +33,6 @@ public class RWArenaListener extends MobArenaListener
      */
     public void onArenaEnd(Arena arena)
     {
-        RangedWolvesOwner.clearWolves(arena);
+        RWOwner.clearWolves(arena);
     }
 }

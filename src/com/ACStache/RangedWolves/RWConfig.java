@@ -34,10 +34,10 @@ public class RWConfig
 
         if(RangedWolves.maHandler != null)
         {
-	        RangedWolves.am.initialize();
-	        arenas = (LinkedList<Arena>)RangedWolves.am.getEnabledArenas();
-	        clearArenas();
-	        setArenas();
+            RangedWolves.am.initialize();
+            arenas = (LinkedList<Arena>)RangedWolves.am.getEnabledArenas();
+            clearArenas();
+            setArenas();
         }
         
         config.save();
@@ -49,7 +49,7 @@ public class RWConfig
      */
     public static void initConfig(File file)
     {
-    	config = new Configuration(file);
+        config = new Configuration(file);
         config.load();
         
         config.setHeader(getHeader());
@@ -59,10 +59,10 @@ public class RWConfig
         
         if(RangedWolves.maHandler != null)
         {
-	        RangedWolves.am.initialize();
-	        arenas = (LinkedList<Arena>)RangedWolves.am.getEnabledArenas();
-	        initArenas();
-	        setArenas();
+            RangedWolves.am.initialize();
+            arenas = (LinkedList<Arena>)RangedWolves.am.getEnabledArenas();
+            initArenas();
+            setArenas();
         }
         config.save();
     }
@@ -95,7 +95,7 @@ public class RWConfig
         {
             if(arenaMap.get(a) == null)
             {
-        	    arenaMap.put(a, new LinkedList<Boolean>());
+                arenaMap.put(a, new LinkedList<Boolean>());
                 arenaMap.get(a).add(config.getBoolean("RW-in-MobArena." + a.arenaName(), true));
             }
             else
