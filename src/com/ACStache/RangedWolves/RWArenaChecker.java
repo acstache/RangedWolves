@@ -14,6 +14,6 @@ public class RWArenaChecker
         if(RangedWolves.maHandler != null && RangedWolves.maHandler.isPlayerInArena(player))
             return true; //Mob Arena found and player is in an arena
         else
-            return false; //Mob Arena not found, player not in an arena, or both
+            return false;
     }
 }

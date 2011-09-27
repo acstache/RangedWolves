@@ -4,10 +4,13 @@ import java.util.HashSet;
 
 import org.bukkit.ChatColor;
 import org.bukkit.World;
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Egg;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Snowball;
 import org.bukkit.entity.Wolf;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -45,13 +48,17 @@ public class RWEntityListener extends EntityListener
         if(damager != DamageCause.PROJECTILE) {return;}
         
         //if damager wasn't a projectile, exit
-        EntityDamageByEntityEvent event2 = (EntityDamageByEntityEvent)event;
-        Entity cause = event2.getDamager();//((EntityDamageByEntityEvent)event).getDamager();
+        Entity cause = ((EntityDamageByEntityEvent)event).getDamager();
         if(!(cause instanceof Projectile)) {return;}
         
         //if projectile shooter isn't a player, exit
         Projectile proj = (Projectile)cause;
         if(!(proj.getShooter() instanceof Player)) {return;}
+        
+        //3 checks for projectiles from config
+        if(proj instanceof Arrow && !RWConfig.RWProj("Arrow")) {return;}
+        if(proj instanceof Egg && !RWConfig.RWProj("Egg")) {return;}
+        if(proj instanceof Snowball && !RWConfig.RWProj("Snowball")) {return;}
         
         //get the shooter of the projectile
         Player player = (Player)proj.getShooter();
@@ -61,7 +68,7 @@ public class RWEntityListener extends EntityListener
         {
             //get the arena the player is in & the player's pets
             Arena arena = RangedWolves.am.getArenaWithPlayer(player);
-            //boolean arenaPvP = arena.isPvpEnabled(); //uncomment if using dev build of Mob Arena
+            boolean arenaPvP = arena.isPvpEnabled();
             HashSet<Wolf> pets = (HashSet<Wolf>)RWOwner.getPets(player);
             
             //if RW is not allowed in the arena, exit
@@ -84,9 +91,7 @@ public class RWEntityListener extends EntityListener
                     //if the wolf has an owner other than the player
                     else
                     {
-                        event.setCancelled(true);
-                        //uncomment below if using dev build of Mob Arena and remove above event cancel
-                        /* //if arena pvp is enabled
+                        //if arena pvp is enabled
                         if(arenaPvP)
                         {
                             //set wolf as your wolves' target
@@ -96,7 +101,7 @@ public class RWEntityListener extends EntityListener
                         else
                         {
                             event.setCancelled(true);
-                        }*/
+                        }
                     }
                 }
                 //wolf is not a pet
@@ -108,9 +113,7 @@ public class RWEntityListener extends EntityListener
             //else if the target is a player
             else if(newTarget instanceof Player)
             {
-                return;
-                //uncomment below if using dev build of Mob Arena and remove above return statement
-                /* //if you manage to shoot yourself
+                //if you manage to shoot yourself
                 if(player == (Player)newTarget)
                 {
                     event.setCancelled(true);
@@ -129,7 +132,7 @@ public class RWEntityListener extends EntityListener
                     {
                         event.setCancelled(true);
                     }
-                }*/
+                }
             }
             //else the target is not a wolf or player
             else

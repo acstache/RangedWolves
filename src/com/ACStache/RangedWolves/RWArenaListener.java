@@ -1,5 +1,7 @@
 package com.ACStache.RangedWolves;
 
+import java.util.HashSet;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
@@ -11,7 +13,6 @@ public class RWArenaListener extends MobArenaListener
 {
     /**
      * Hook into the onArenaStart event to add wolves to their owners
-     * This relationship is currently lacking from Bukkit
      */
     public void onArenaStart(final Arena arena)
     {
@@ -19,11 +20,10 @@ public class RWArenaListener extends MobArenaListener
         {
             public void run()
             {
-                if(!(arena.getPets() == null)) //if there are pets in the arena
-                    for (Wolf w : arena.getPets()) //for all pet wolves in the arena
-                        RWOwner.addWolf(arena, (Player)w.getOwner(), w); //attach the wolf to the owner
-                else //if there are no pets in the arena
-                    return; //ignore
+                HashSet<Wolf> pets = (HashSet<Wolf>)arena.getPets();
+                if(!(pets == null))
+                    for (Wolf w : pets)
+                        RWOwner.addWolf(arena, (Player)w.getOwner(), w);
             }
         }, 20);
     }

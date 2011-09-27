@@ -18,6 +18,8 @@ public class RWConfig
     private static ArrayList<World> worlds;
     private static HashMap<Arena, LinkedList<Boolean>> arenaMap = new HashMap<Arena, LinkedList<Boolean>>();
     private static LinkedList<Arena> arenas;
+    private static HashMap<String, LinkedList<Boolean>> projMap = new HashMap<String, LinkedList<Boolean>>();
+    private static LinkedList<String> projs = new LinkedList<String>();
     
     /**
      * Load/reload the configuration file
@@ -39,6 +41,10 @@ public class RWConfig
             clearArenas();
             setArenas();
         }
+        
+        addProjectiles();
+        clearProjectiles();
+        setProjectiles();
         
         config.save();
     }
@@ -64,6 +70,11 @@ public class RWConfig
             initArenas();
             setArenas();
         }
+        
+        addProjectiles();
+        initProjectiles();
+        setProjectiles();
+        
         config.save();
     }
     
@@ -129,14 +140,31 @@ public class RWConfig
         }
     }
     
-    /**
-     * Check if a world is allowed to use RW
-     * @param world the world being checked
-     * @return true/false
-     */
-    public static Boolean RWinWorld(World world)
+    private static void addProjectiles()
     {
-        return worldMap.get(world).getFirst();
+        projs.add("Arrow");
+        projs.add("Egg");
+        projs.add("Snowball");
+    }
+    
+    private static void initProjectiles()
+    {
+        for(String s : projs)
+            config.setProperty("RW-Projectiles." + s, true);
+    }
+    
+    private static void setProjectiles()
+    {
+        for(String s : projs)
+        {
+            if(projMap.get(s) == null)
+            {
+                projMap.put(s, new LinkedList<Boolean>());
+                projMap.get(s).add(config.getBoolean("RW-Projectiles." + s, true));
+            }
+            else
+                projMap.get(s).add(config.getBoolean("RW-Projectiles." + s, true));
+        }
     }
     
     /**
@@ -144,9 +172,33 @@ public class RWConfig
      * @param arena the arena being checked
      * @return true/false
      */
-    public static Boolean RWinArena(Arena arena)
+    public static boolean RWinArena(Arena arena)
     {
         return arenaMap.get(arena).getFirst();
+    }
+    
+    /**
+     * Check if a world is allowed to use RW
+     * @param world the world being checked
+     * @return true/false
+     */
+    public static boolean RWinWorld(World world)
+    {
+        return worldMap.get(world).getFirst();
+    }
+    
+    public static boolean RWProj(String projName)
+    {
+        return projMap.get(projName).getFirst();
+    }
+    
+    /**
+     * Clear the arenaMap for reloads/restarts
+     * Mainly to ensure no overlaps happen in settings
+     */
+    public static void clearArenas()
+    {
+        arenaMap.clear();
     }
     
     /**
@@ -159,11 +211,11 @@ public class RWConfig
     }
     
     /**
-     * Clear the arenaMap for reloads/restarts
+     * Clear the projMap for reloads/restarts
      * Mainly to ensure no overlaps happen in settings
      */
-    public static void clearArenas()
+    public static void clearProjectiles()
     {
-        arenaMap.clear();
+        projMap.clear();
     }
 }
