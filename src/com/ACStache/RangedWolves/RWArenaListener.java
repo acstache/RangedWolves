@@ -23,7 +23,7 @@ public class RWArenaListener extends MobArenaListener
                 HashSet<Wolf> pets = (HashSet<Wolf>)arena.getPets();
                 if(!(pets == null))
                     for (Wolf w : pets)
-                        RWOwner.addWolf(arena, (Player)w.getOwner(), w);
+                        RWOwner.addWolf(arena, ((Player)w.getOwner()).getName(), w);
             }
         }, 20);
     }

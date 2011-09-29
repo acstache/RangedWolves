@@ -2,6 +2,7 @@ package com.ACStache.RangedWolves;
 
 import java.util.HashSet;
 
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -29,11 +30,25 @@ public class RWPlayerListener extends PlayerListener
                 if(e instanceof Wolf)
                 {
                     Wolf wolf = (Wolf)e;
-                    Player owner = (Player)wolf.getOwner();
-                    if(owner != null)
+                    if(wolf.getOwner() instanceof OfflinePlayer)
                     {
-                        System.out.println("Wolf " + wolf.getEntityId() + " added to Player " + owner.getName());
-                        RWOwner.addWolf(owner, wolf);
+                        OfflinePlayer offPlayer = (OfflinePlayer)wolf.getOwner();
+                        if(offPlayer != null)
+                        {
+                            String name = offPlayer.getName();
+                            System.out.println("Wolf " + wolf.getEntityId() + " added to Player " + name);
+                            RWOwner.addWolf(name, wolf);
+                        }
+                    }
+                    else
+                    {
+                        Player owner = (Player)wolf.getOwner();
+                        if(owner != null)
+                        {
+                            String name = owner.getName();
+                            System.out.println("Wolf " + wolf.getEntityId() + " added to Player " + name);
+                            RWOwner.addWolf(name, wolf);
+                        }
                     }
                 }
             }

@@ -20,9 +20,8 @@ public class RWOwner
      * @param player the player who gets the wolf
      * @param wolf the wolf in question
      */
-    public static void addWolf(Player player, Wolf wolf)
+    public static void addWolf(String playerName, Wolf wolf)
     {
-        String playerName = player.getName();
         if(tamedWolfMap.get(playerName) == null)
         {
             tamedWolfMap.put(playerName, new HashSet<Wolf>());
@@ -38,9 +37,8 @@ public class RWOwner
      * @param player the player who picked a pet class
      * @param wolf the wolf that got spawned
      */
-    public static void addWolf(Arena arena, Player player, Wolf wolf)
+    public static void addWolf(Arena arena, String playerName, Wolf wolf)
     {
-        String playerName = player.getName();
         if(arenaMap.get(arena) == null) //arena not found
         {
             if(arenaWolfMap.get(playerName) == null) //player not found in the arena (always true on just making a new arena key)
@@ -58,7 +56,7 @@ public class RWOwner
                 arenaMap.get(arena).get(playerName).add(wolf);
             }
             else
-                arenaMap.get(arena).get(player).add(wolf);
+                arenaMap.get(arena).get(playerName).add(wolf);
         }
     }
     
@@ -67,9 +65,9 @@ public class RWOwner
      * @param player the player who just lost a pet
      * @param wolf the wolf that just died
      */
-    public static void removeWolf(Player player, Wolf wolf)
+    public static void removeWolf(String playerName, Wolf wolf)
     {
-        tamedWolfMap.get(player.getName()).remove(wolf);
+        tamedWolfMap.get(playerName).remove(wolf);
     }
     
     /**

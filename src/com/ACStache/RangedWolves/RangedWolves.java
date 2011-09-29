@@ -150,7 +150,7 @@ public class RangedWolves extends JavaPlugin
                                 Player owner = (Player)wolf.getOwner();
                                 if(owner != null) //wolf has an owner
                                 {
-                                    RWOwner.addWolf(owner, wolf);
+                                    RWOwner.addWolf(owner.getName(), wolf);
                                     wolvesAdded++;
                                 }
                             }
