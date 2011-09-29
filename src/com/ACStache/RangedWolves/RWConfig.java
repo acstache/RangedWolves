@@ -110,7 +110,9 @@ public class RWConfig
                 arenaMap.get(a).add(config.getBoolean("RW-in-MobArena." + a.arenaName(), true));
             }
             else
+            {
                 arenaMap.get(a).add(config.getBoolean("RW-in-MobArena." + a.arenaName(), true));
+            }
         }
     }
     
@@ -136,7 +138,9 @@ public class RWConfig
                 worldMap.get(w).add(config.getBoolean("RW-on-Server." + w.getName(), true));
             }
             else
+            {
                 worldMap.get(w).add(config.getBoolean("RW-on-Server." + w.getName(), true));
+            }
         }
     }
     
@@ -163,7 +167,9 @@ public class RWConfig
                 projMap.get(s).add(config.getBoolean("RW-Projectiles." + s, true));
             }
             else
+            {
                 projMap.get(s).add(config.getBoolean("RW-Projectiles." + s, true));
+            }
         }
     }
     

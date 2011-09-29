@@ -35,9 +35,7 @@ public class RWPlayerListener extends PlayerListener
                         OfflinePlayer offPlayer = (OfflinePlayer)wolf.getOwner();
                         if(offPlayer != null)
                         {
-                            String name = offPlayer.getName();
-                            System.out.println("Wolf " + wolf.getEntityId() + " added to Player " + name);
-                            RWOwner.addWolf(name, wolf);
+                            RWOwner.addWolf(offPlayer.getName(), wolf);
                         }
                     }
                     else
@@ -45,9 +43,7 @@ public class RWPlayerListener extends PlayerListener
                         Player owner = (Player)wolf.getOwner();
                         if(owner != null)
                         {
-                            String name = owner.getName();
-                            System.out.println("Wolf " + wolf.getEntityId() + " added to Player " + name);
-                            RWOwner.addWolf(name, wolf);
+                            RWOwner.addWolf(owner.getName(), wolf);
                         }
                     }
                 }

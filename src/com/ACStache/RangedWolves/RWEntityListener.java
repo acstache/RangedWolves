@@ -212,19 +212,12 @@ public class RWEntityListener extends EntityListener
         //loop through the player's pets
         for(Wolf w : pets)
         {
-            //if the wolf is sitting
-            if(w.isSitting())
+            if(w.isSitting()) //if the wolf is sitting
             {
-                //get it up & set it's target
-                w.setSitting(false);
-                w.setTarget(target);
+                w.setSitting(false); //get it up
             }
-            //else the wolf is not sitting
-            else
-            {
-                //set it's target
-                w.setTarget(target);
-            }
+            //set it's target
+            w.setTarget(target);
         }
     }
     public void setWorldTarget(HashSet<Wolf> pets, LivingEntity target)
@@ -247,12 +240,15 @@ public class RWEntityListener extends EntityListener
     public void onEntityTame(EntityTameEvent event)
     {
         Entity pet = event.getEntity();
-        if(pet instanceof Wolf)
+        if(event.getOwner() instanceof Player)
         {
-            Wolf wolf = (Wolf)pet;
-            Player owner = (Player)wolf.getOwner();
-            RWOwner.addWolf(owner.getName(), wolf);
-            ((Player)(wolf.getOwner())).sendMessage(ChatColor.AQUA + "RW: You've tamed a wolf");
+            Player owner = (Player)event.getOwner();
+            if(pet instanceof Wolf)
+            {
+                Wolf wolf = (Wolf)pet;
+                RWOwner.addWolf(owner.getName(), wolf);
+                owner.sendMessage(ChatColor.AQUA + "RW: You've tamed a wolf");
+            }
         }
     }
     
@@ -265,16 +261,15 @@ public class RWEntityListener extends EntityListener
             Wolf wolf = (Wolf)dead;
             //if the wolf that died is in an arena, ignore it
             if(RangedWolves.am.getArenaWithPet(wolf) != null) {return;}
+            //if the wolf isn't attached to a player, ignore it
+            if(!RWOwner.checkWorldWolf(wolf)) {return;}
             
             if(wolf.getOwner() instanceof OfflinePlayer) //if owner is offline
             {
                 OfflinePlayer offPlayer = (OfflinePlayer)wolf.getOwner();
                 if(offPlayer != null)
                 {
-                    if(RWOwner.checkWorldWolf(wolf))
-                    {
-                        RWOwner.removeWolf(offPlayer.getName(), wolf);
-                    }
+                    RWOwner.removeWolf(offPlayer.getName(), wolf);
                 }
             }
             else //if owner is online
@@ -282,11 +277,8 @@ public class RWEntityListener extends EntityListener
                 Player owner = (Player)wolf.getOwner();
                 if(owner != null)
                 {
-                    if(RWOwner.checkWorldWolf(wolf))
-                    {
-                        RWOwner.removeWolf(owner.getName(), wolf);
-                        owner.sendMessage(ChatColor.AQUA + "RW: You've lost a wolf");
-                    }
+                    RWOwner.removeWolf(owner.getName(), wolf);
+                    owner.sendMessage(ChatColor.AQUA + "RW: You've lost a wolf");
                 }
             }
         }
@@ -301,14 +293,13 @@ public class RWEntityListener extends EntityListener
             Wolf wolf = (Wolf)spawn;
             //if it was spawned in an arena, ignore it
             if(RangedWolves.am.getArenaWithPet(wolf) != null) {return;}
+            //if the wolf isn't attached to a player, ignore it
+            if(!RWOwner.checkWorldWolf(wolf)) {return;}
             
             Player owner = (Player)wolf.getOwner();
             if(owner != null) //if there is an owner
             {
-                if(!RWOwner.checkWorldWolf(wolf)) //if it's not already associated
-                {
-                    RWOwner.addWolf(owner.getName(), wolf); //add it
-                }
+                RWOwner.addWolf(owner.getName(), wolf); //add it
             }
         }
     }

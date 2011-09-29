@@ -25,10 +25,22 @@ public class RWOwner
         if(tamedWolfMap.get(playerName) == null)
         {
             tamedWolfMap.put(playerName, new HashSet<Wolf>());
-            tamedWolfMap.get(playerName).add(wolf);
+            if(!tamedWolfMap.get(playerName).contains(wolf))
+            {
+                tamedWolfMap.get(playerName).add(wolf);
+                if(RWDebug.getDebug())
+                    System.out.println("Wolf " + wolf.getEntityId() + " added to Player " + playerName);
+            }
         }
         else
-            tamedWolfMap.get(playerName).add(wolf);
+        {
+            if(!tamedWolfMap.get(playerName).contains(wolf))
+            {
+                tamedWolfMap.get(playerName).add(wolf);
+                if(RWDebug.getDebug())
+                    System.out.println("Wolf " + wolf.getEntityId() + " added to Player " + playerName);
+            }
+        }
     }
     
     /**
@@ -45,7 +57,10 @@ public class RWOwner
             {
                 arenaWolfMap.put(playerName, new HashSet<Wolf>());
                 arenaMap.put(arena, arenaWolfMap);
-                arenaMap.get(arena).get(playerName).add(wolf);
+                if(!arenaWolfMap.get(playerName).contains(wolf))
+                {
+                    arenaWolfMap.get(playerName).add(wolf);
+                }
             }
         }
         else
@@ -53,10 +68,18 @@ public class RWOwner
             if(arenaWolfMap.get(playerName) == null) //player not found in the arena
             {
                 arenaWolfMap.put(playerName, new HashSet<Wolf>());
-                arenaMap.get(arena).get(playerName).add(wolf);
+                if(!arenaWolfMap.get(playerName).contains(wolf))
+                {
+                    arenaWolfMap.get(playerName).add(wolf);
+                }
             }
             else
-                arenaMap.get(arena).get(playerName).add(wolf);
+            {
+                if(!arenaWolfMap.get(playerName).contains(wolf))
+                {
+                    arenaWolfMap.get(playerName).add(wolf);
+                }
+            }
         }
     }
     
@@ -67,7 +90,12 @@ public class RWOwner
      */
     public static void removeWolf(String playerName, Wolf wolf)
     {
-        tamedWolfMap.get(playerName).remove(wolf);
+        if(tamedWolfMap.get(playerName).contains(wolf))
+        {
+            tamedWolfMap.get(playerName).remove(wolf);
+            if(RWDebug.getDebug())
+                System.out.println("Wolf " + wolf.getEntityId() + " removed from Player " + playerName);
+        }
     }
     
     /**

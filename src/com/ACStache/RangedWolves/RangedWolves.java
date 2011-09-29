@@ -89,7 +89,7 @@ public class RangedWolves extends JavaPlugin
     {
         Plugin maPlugin = (MobArena)Bukkit.getServer().getPluginManager().getPlugin("MobArena");
         
-        if(maPlugin == null) { return; }
+        if(maPlugin == null) {return;}
         
         maHandler = new MobArenaHandler();
         arenaListener = new RWArenaListener();
@@ -106,15 +106,24 @@ public class RangedWolves extends JavaPlugin
                 if((sender instanceof Player && ((Player)sender).isOp()) || !(sender instanceof Player))
                 {
                     RWDebug.setDebug(!(RWDebug.getDebug()));
-                    if(RWDebug.getDebug())
-                        ((Player)sender).sendMessage(ChatColor.AQUA + "RW: Debug Mode Activated");
+                    if(sender instanceof Player)
+                    {
+                        if(RWDebug.getDebug())
+                            ((Player)sender).sendMessage(ChatColor.AQUA + "RW: Debug Mode Activated");
+                        else
+                            ((Player)sender).sendMessage(ChatColor.AQUA + "RW: Debug Mode Deactivated");
+                    }
                     else
-                        ((Player)sender).sendMessage(ChatColor.AQUA + "RW: Debug Mode Deactivated");
+                    {
+                        if(RWDebug.getDebug())
+                            log.info("[" + info.getName() + "] Debug Mode Activated");
+                        else
+                            log.info("[" + info.getName() + "] Debug Mode Deactivated");
+                    }
                 }
                 else
                 {
-                    if(sender instanceof Player)
-                        ((Player)sender).sendMessage(ChatColor.AQUA + "RW: You don't have permission to do that");
+                    ((Player)sender).sendMessage(ChatColor.AQUA + "RW: You don't have permission to do that");
                 }
             }
             else if(args[0].equalsIgnoreCase("reload"))
@@ -129,8 +138,7 @@ public class RangedWolves extends JavaPlugin
                 }
                 else
                 {
-                    if(sender instanceof Player)
-                        ((Player)sender).sendMessage(ChatColor.AQUA + "RW: You don't have permission to do that");
+                    ((Player)sender).sendMessage(ChatColor.AQUA + "RW: You don't have permission to do that");
                 }
             }
             else if(args[0].equalsIgnoreCase("retro"))
@@ -156,20 +164,28 @@ public class RangedWolves extends JavaPlugin
                             }
                         }
                     }
+                    
                     if(wolvesAdded != 0)
                         player.sendMessage(ChatColor.AQUA + "RW: " + wolvesAdded + " wolves added to their owners");
                     else
                         player.sendMessage(ChatColor.AQUA + "RW: No new wolves added");
                 }
                 else
+                {
                     log.info("[" + info.getName() + "] You don't have permission to do that from the console");
+                }
             }
             else
             {
                 if(sender instanceof Player)
-                    ((Player)sender).sendMessage(ChatColor.AQUA + "RW: Please type '/rw debug', '/rw reload', or '/rw retro'");
+                {
+                    ((Player)sender).sendMessage(ChatColor.AQUA + "Ranged Wolves version " + info.getVersion());
+                    ((Player)sender).sendMessage(ChatColor.AQUA + "Please type '/rw debug', '/rw reload', or '/rw retro'");
+                }
                 else
+                {
                     log.info("[" + info.getName() + "] Please type 'rw debug' or 'rw reload'");
+                }
             }
         }
         return true;
