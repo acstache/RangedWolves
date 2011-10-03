@@ -67,7 +67,7 @@ public class RangedWolves extends JavaPlugin
             }
         }
         
-        log.info("[" + info.getName() + "] " + info.getVersion() + " Enabled successfully! By  " + info.getAuthors());
+        log.info("[" + info.getName() + "] " + info.getVersion() + " Enabled successfully! By: " + info.getAuthors());
         
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvent(Event.Type.CREATURE_SPAWN, entityListener, Priority.Monitor, this);
@@ -96,95 +96,97 @@ public class RangedWolves extends JavaPlugin
         am = ((MobArena)maPlugin).getAM();
     }
     
-    //used solely for the debug command
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
     {
         if(command.getName().equalsIgnoreCase("rw"))
         {
-            if(args[0].equalsIgnoreCase("debug"))
+            if(args.length >= 1)
             {
-                if((sender instanceof Player && ((Player)sender).isOp()) || !(sender instanceof Player))
+                if(args[0].equalsIgnoreCase("debug"))
                 {
-                    RWDebug.setDebug(!(RWDebug.getDebug()));
-                    if(sender instanceof Player)
+                    if((sender instanceof Player && ((Player)sender).isOp()) || !(sender instanceof Player))
                     {
-                        if(RWDebug.getDebug())
-                            ((Player)sender).sendMessage(ChatColor.AQUA + "RW: Debug Mode Activated");
-                        else
-                            ((Player)sender).sendMessage(ChatColor.AQUA + "RW: Debug Mode Deactivated");
-                    }
-                    else
-                    {
-                        if(RWDebug.getDebug())
-                            log.info("[" + info.getName() + "] Debug Mode Activated");
-                        else
-                            log.info("[" + info.getName() + "] Debug Mode Deactivated");
-                    }
-                }
-                else
-                {
-                    ((Player)sender).sendMessage(ChatColor.AQUA + "RW: You don't have permission to do that");
-                }
-            }
-            else if(args[0].equalsIgnoreCase("reload"))
-            {
-                if((sender instanceof Player && ((Player)sender).isOp()) || !(sender instanceof Player))
-                {
-                    RWConfig.loadConfig(file);
-                    if(sender instanceof Player)
-                        ((Player)sender).sendMessage(ChatColor.AQUA + "RW: Config reloaded");
-                    else
-                        log.info("[" + info.getName() + "] Config reloaded");
-                }
-                else
-                {
-                    ((Player)sender).sendMessage(ChatColor.AQUA + "RW: You don't have permission to do that");
-                }
-            }
-            else if(args[0].equalsIgnoreCase("retro"))
-            {
-                if(sender instanceof Player)
-                {
-                    Player player = (Player)sender;
-                    int wolvesAdded = 0;
-                    
-                    for(Entity e : player.getNearbyEntities(20, 20, 20)) //check a box (radius of 20) around the player
-                    {
-                        if(e instanceof Wolf)
+                        RWDebug.setDebug(!(RWDebug.getDebug()));
+                        if(sender instanceof Player)
                         {
-                            Wolf wolf = (Wolf)e;
-                            if(!RWOwner.checkWorldWolf(wolf)) //if wolf is not part of the known pets
+                            if(RWDebug.getDebug())
+                                ((Player)sender).sendMessage(ChatColor.AQUA + "RW: Debug Mode Activated");
+                            else
+                                ((Player)sender).sendMessage(ChatColor.AQUA + "RW: Debug Mode Deactivated");
+                        }
+                        else
+                        {
+                            if(RWDebug.getDebug())
+                                log.info("[" + info.getName() + "] Debug Mode Activated");
+                            else
+                                log.info("[" + info.getName() + "] Debug Mode Deactivated");
+                        }
+                    }
+                    else
+                    {
+                        ((Player)sender).sendMessage(ChatColor.AQUA + "RW: You don't have permission to do that");
+                    }
+                }
+                else if(args[0].equalsIgnoreCase("reload"))
+                {
+                    if((sender instanceof Player && ((Player)sender).isOp()) || !(sender instanceof Player))
+                    {
+                        RWConfig.loadConfig(file);
+                        if(sender instanceof Player)
+                            ((Player)sender).sendMessage(ChatColor.AQUA + "RW: Config reloaded");
+                        else
+                            log.info("[" + info.getName() + "] Config reloaded");
+                    }
+                    else
+                    {
+                        ((Player)sender).sendMessage(ChatColor.AQUA + "RW: You don't have permission to do that");
+                    }
+                }
+                else if(args[0].equalsIgnoreCase("retro"))
+                {
+                    if(sender instanceof Player)
+                    {
+                        Player player = (Player)sender;
+                        int wolvesAdded = 0;
+                        
+                        for(Entity e : player.getNearbyEntities(20, 20, 20)) //check a box (radius of 20) around the player
+                        {
+                            if(e instanceof Wolf)
                             {
-                                Player owner = (Player)wolf.getOwner();
-                                if(owner != null) //wolf has an owner
+                                Wolf wolf = (Wolf)e;
+                                if(!RWOwner.checkWorldWolf(wolf)) //if wolf is not part of the known pets
                                 {
-                                    RWOwner.addWolf(owner.getName(), wolf);
-                                    wolvesAdded++;
+                                    Player owner = (Player)wolf.getOwner();
+                                    if(owner != null) //wolf has an owner
+                                    {
+                                        RWOwner.addWolf(owner.getName(), wolf);
+                                        wolvesAdded++;
+                                    }
                                 }
                             }
                         }
+                        
+                        if(wolvesAdded != 0)
+                            player.sendMessage(ChatColor.AQUA + "RW: " + wolvesAdded + " wolves added to their owners");
+                        else
+                            player.sendMessage(ChatColor.AQUA + "RW: No new wolves added");
                     }
-                    
-                    if(wolvesAdded != 0)
-                        player.sendMessage(ChatColor.AQUA + "RW: " + wolvesAdded + " wolves added to their owners");
                     else
-                        player.sendMessage(ChatColor.AQUA + "RW: No new wolves added");
+                    {
+                        log.info("[" + info.getName() + "] You don't have permission to do that from the console");
+                    }
                 }
                 else
                 {
-                    log.info("[" + info.getName() + "] You don't have permission to do that from the console");
-                }
-            }
-            else
-            {
-                if(sender instanceof Player)
-                {
-                    ((Player)sender).sendMessage(ChatColor.AQUA + "Ranged Wolves version " + info.getVersion());
-                    ((Player)sender).sendMessage(ChatColor.AQUA + "Please type '/rw debug', '/rw reload', or '/rw retro'");
-                }
-                else
-                {
-                    log.info("[" + info.getName() + "] Please type 'rw debug' or 'rw reload'");
+                    if(sender instanceof Player)
+                    {
+                        ((Player)sender).sendMessage(ChatColor.AQUA + "Ranged Wolves version " + info.getVersion());
+                        ((Player)sender).sendMessage(ChatColor.AQUA + "Please type '/rw debug', '/rw reload', or '/rw retro'");
+                    }
+                    else
+                    {
+                        log.info("[" + info.getName() + "] Please type 'rw debug' or 'rw reload'");
+                    }
                 }
             }
         }
