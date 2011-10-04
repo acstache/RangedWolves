@@ -143,6 +143,7 @@ public class RWOwner
      */
     public static void clearWolves(Arena arena)
     {
-        arenaMap.get(arena).clear();
+        if(arenaMap.get(arena) != null)
+            arenaMap.get(arena).clear();
     }
 }
