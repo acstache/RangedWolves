@@ -36,7 +36,8 @@ public class RangedWolves extends JavaPlugin
 
     public void onEnable()
     {
-        if(Bukkit.getPluginManager().getPlugin("MobArena") != null)
+        Plugin mobArena = Bukkit.getPluginManager().getPlugin("MobArena");
+        if(mobArena != null && mobArena.isEnabled())
             setupMobArena();
         
         info = getDescription();
