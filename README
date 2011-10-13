@@ -1,5 +1,6 @@
 Simply put this into your plugins folder, and it will do it's magic!
-    In the configuration, all worlds/arenas default to true. Simply change any to false if you want
+    In the configuration, all worlds/arenas/projectiles default to true.
+    Simply change any of these to false if you don't want them.
 Makes wolves from Mob Arena attack your target when you attack at range.
 Makes wolves you have previously tamed and any wolves you end up taming attack targets as well
     This is for outside of Mob Arenas. They do not help if you're in an arena.
