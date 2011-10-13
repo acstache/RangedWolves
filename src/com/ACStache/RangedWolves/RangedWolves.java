@@ -16,7 +16,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.config.Configuration;
 
 import com.garbagemule.MobArena.ArenaMaster;
 import com.garbagemule.MobArena.MobArena;
@@ -54,29 +53,17 @@ public class RangedWolves extends JavaPlugin
         }
         else
         {
-            Configuration config = new Configuration(file);
-            config.load();
-            if(config.getKeys("RW-on-Server") != null)
-            {
-                RWConfig.loadConfig(file);
-                log.info("[" + info.getName() + "] Config loaded");
-            }
-            else
-            {
-                log.info("[" + info.getName() + "] Config is missing pieces, generating a default config");
-                config.getAll().clear();
-                RWConfig.initConfig(file);
-            }
+            RWConfig.loadConfig(file);
         }
         
         log.info("[" + info.getName() + "] " + info.getVersion() + " Enabled successfully! By: " + info.getAuthors());
         
         PluginManager pm = getServer().getPluginManager();
+        pm.registerEvent(Event.Type.PLAYER_TELEPORT, playerListener, Priority.Normal, this);
         pm.registerEvent(Event.Type.CREATURE_SPAWN, entityListener, Priority.Monitor, this);
         pm.registerEvent(Event.Type.ENTITY_DAMAGE, entityListener, Priority.Monitor, this);
         pm.registerEvent(Event.Type.ENTITY_DEATH, entityListener, Priority.Monitor, this);
         pm.registerEvent(Event.Type.ENTITY_TAME, entityListener, Priority.Monitor, this);
-        pm.registerEvent(Event.Type.PLAYER_TELEPORT, playerListener, Priority.Normal, this);
     }
 
     public void onDisable()
@@ -84,7 +71,7 @@ public class RangedWolves extends JavaPlugin
         RWConfig.clearWorlds();
         RWConfig.clearArenas();
         RWConfig.clearProjectiles();
-        log.info("[" + info.getName() + "] " + info.getVersion() + " Disabled!");
+        log.info("[" + info.getName() + "] Successfully Disabled");
     }
     
     private void setupMobArena()

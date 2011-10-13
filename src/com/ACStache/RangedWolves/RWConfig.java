@@ -1,19 +1,21 @@
 package com.ACStache.RangedWolves;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.util.config.Configuration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import com.garbagemule.MobArena.Arena;
 
 public class RWConfig
 {
-    private static Configuration config;
+    private static YamlConfiguration config2;
     private static HashMap<World, LinkedList<Boolean>> worldMap = new HashMap<World, LinkedList<Boolean>>();
     private static ArrayList<World> worlds;
     private static HashMap<Arena, LinkedList<Boolean>> arenaMap = new HashMap<Arena, LinkedList<Boolean>>();
@@ -27,26 +29,47 @@ public class RWConfig
      */
     public static void loadConfig(File file)
     {
-        config = new Configuration(file);
-        config.load();
-        
-        worlds = (ArrayList<World>)Bukkit.getServer().getWorlds();
-        clearWorlds();
-        setWorlds();
-
-        if(RangedWolves.maHandler != null)
+        config2 = new YamlConfiguration();
+        try
         {
-            RangedWolves.am.initialize();
-            arenas = (LinkedList<Arena>)RangedWolves.am.getEnabledArenas();
-            clearArenas();
-            setArenas();
+            config2.load(file);
         }
-        
-        addProjectiles();
-        clearProjectiles();
-        setProjectiles();
-        
-        config.save();
+        catch (FileNotFoundException e)
+        {
+            System.out.println("[RangedWolves] No config found. Generating a default config");
+            initConfig(file);
+        }
+        catch (Exception e)
+        {
+            System.out.println("[RangedWolves] An Error has occured. Try deleting your config and reloading Ranged Wolves");
+        }
+        finally
+        {
+            worlds = (ArrayList<World>)Bukkit.getServer().getWorlds();
+            clearWorlds();
+            setWorlds();
+
+            if(RangedWolves.maHandler != null)
+            {
+                RangedWolves.am.initialize();
+                arenas = (LinkedList<Arena>)RangedWolves.am.getEnabledArenas();
+                clearArenas();
+                setArenas();
+            }
+            
+            addProjectiles();
+            clearProjectiles();
+            setProjectiles();
+            
+            try
+            {
+                config2.save(file);
+            }
+            catch (Exception e)
+            {
+                System.out.println("[RangedWolves] An Error has occured. Try deleting your config and reloading Ranged Wolves");
+            }
+        }
     }
     
     /**
@@ -55,33 +78,46 @@ public class RWConfig
      */
     public static void initConfig(File file)
     {
-        config = new Configuration(file);
-        config.load();
-        
-        config.setHeader(getHeader());
-        worlds = (ArrayList<World>)Bukkit.getServer().getWorlds();
-        initWorlds();
-        setWorlds();
-        
-        if(RangedWolves.maHandler != null)
+        config2 = new YamlConfiguration();
+        try
         {
-            RangedWolves.am.initialize();
-            arenas = (LinkedList<Arena>)RangedWolves.am.getEnabledArenas();
-            initArenas();
-            setArenas();
+            config2.load(file);
         }
-        
-        addProjectiles();
-        initProjectiles();
-        setProjectiles();
-        
-        config.save();
+        catch (Exception e) { /*ignore*/ }
+        finally
+        {
+            worlds = (ArrayList<World>)Bukkit.getServer().getWorlds();
+            initWorlds();
+            setWorlds();
+            
+            if(RangedWolves.maHandler != null)
+            {
+                RangedWolves.am.initialize();
+                arenas = (LinkedList<Arena>)RangedWolves.am.getEnabledArenas();
+                initArenas();
+                setArenas();
+            }
+            
+            addProjectiles();
+            initProjectiles();
+            setProjectiles();
+            
+            try
+            {
+                config2.save(file);
+            }
+            catch (IOException e)
+            {
+                System.out.println("An Error has occured. Try deleting your config and reloading Ranged Wolves");
+            }
+        }
     }
     
     /**
      * Returns the Header for the configuration file 
      * @return the Header for the configuration file
      */
+    @SuppressWarnings("unused")
     private static String getHeader()
     {
         return "# RangedWolves Config file\n" + 
@@ -94,7 +130,7 @@ public class RWConfig
     private static void initArenas()
     {
         for(Arena a : arenas)
-            config.setProperty("RW-in-MobArena." + a.arenaName(), true);
+            config2.set("RW-in-MobArena." + a.arenaName(), true);
     }
     
     /**
@@ -107,11 +143,11 @@ public class RWConfig
             if(arenaMap.get(a) == null)
             {
                 arenaMap.put(a, new LinkedList<Boolean>());
-                arenaMap.get(a).add(config.getBoolean("RW-in-MobArena." + a.arenaName(), true));
+                arenaMap.get(a).add(config2.getBoolean("RW-in-MobArena." + a.arenaName(), true));
             }
             else
             {
-                arenaMap.get(a).add(config.getBoolean("RW-in-MobArena." + a.arenaName(), true));
+                arenaMap.get(a).add(config2.getBoolean("RW-in-MobArena." + a.arenaName(), true));
             }
         }
     }
@@ -122,7 +158,7 @@ public class RWConfig
     private static void initWorlds()
     {
         for(World w : worlds)
-            config.setProperty("RW-on-Server." + w.getName(), true);
+            config2.set("RW-on-Server." + w.getName(), true);
     }
     
     /**
@@ -135,11 +171,11 @@ public class RWConfig
             if(worldMap.get(w) == null)
             {
                 worldMap.put(w, new LinkedList<Boolean>());
-                worldMap.get(w).add(config.getBoolean("RW-on-Server." + w.getName(), true));
+                worldMap.get(w).add(config2.getBoolean("RW-on-Server." + w.getName(), true));
             }
             else
             {
-                worldMap.get(w).add(config.getBoolean("RW-on-Server." + w.getName(), true));
+                worldMap.get(w).add(config2.getBoolean("RW-on-Server." + w.getName(), true));
             }
         }
     }
@@ -154,7 +190,7 @@ public class RWConfig
     private static void initProjectiles()
     {
         for(String s : projs)
-            config.setProperty("RW-Projectiles." + s, true);
+            config2.set("RW-Projectiles." + s, true);
     }
     
     private static void setProjectiles()
@@ -164,11 +200,11 @@ public class RWConfig
             if(projMap.get(s) == null)
             {
                 projMap.put(s, new LinkedList<Boolean>());
-                projMap.get(s).add(config.getBoolean("RW-Projectiles." + s, true));
+                projMap.get(s).add(config2.getBoolean("RW-Projectiles." + s, true));
             }
             else
             {
-                projMap.get(s).add(config.getBoolean("RW-Projectiles." + s, true));
+                projMap.get(s).add(config2.getBoolean("RW-Projectiles." + s, true));
             }
         }
     }
