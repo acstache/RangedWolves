@@ -15,13 +15,15 @@ import com.garbagemule.MobArena.Arena;
 
 public class RWConfig
 {
-    private static YamlConfiguration config2;
+    private static YamlConfiguration config;
     private static HashMap<World, LinkedList<Boolean>> worldMap = new HashMap<World, LinkedList<Boolean>>();
     private static ArrayList<World> worlds;
     private static HashMap<Arena, LinkedList<Boolean>> arenaMap = new HashMap<Arena, LinkedList<Boolean>>();
     private static LinkedList<Arena> arenas;
     private static HashMap<String, LinkedList<Boolean>> projMap = new HashMap<String, LinkedList<Boolean>>();
     private static LinkedList<String> projs = new LinkedList<String>();
+    private static boolean skeleEnabled, skeleInMobArena;
+    private static int skeleChance, skeleMaxPets;
     
     /**
      * Load/reload the configuration file
@@ -29,10 +31,10 @@ public class RWConfig
      */
     public static void loadConfig(File file)
     {
-        config2 = new YamlConfiguration();
+        config = new YamlConfiguration();
         try
         {
-            config2.load(file);
+            config.load(file);
         }
         catch (FileNotFoundException e)
         {
@@ -45,25 +47,60 @@ public class RWConfig
         }
         finally
         {
+            //set Worlds
             worlds = (ArrayList<World>)Bukkit.getServer().getWorlds();
+            for(World w : worlds)
+            {
+                if(!config.contains("RW-on-Server." + w.getName()))
+                {
+                    System.out.println("[RangedWolves] Updating your config to include World: " + w.getName());
+                    config.set("RW-on-Server." + w.getName(), true);
+                }
+            }
             clearWorlds();
             setWorlds();
 
+            //set Arenas
             if(RangedWolves.maHandler != null)
             {
                 RangedWolves.am.initialize();
                 arenas = (LinkedList<Arena>)RangedWolves.am.getEnabledArenas();
+                for(Arena a : arenas)
+                {
+                    if(!config.contains("RW-in-MobArena." + a.arenaName()))
+                    {
+                        System.out.println("[RangedWolves] Updating your config to include Arena: " + a.arenaName());
+                        config.set("RW-in-MobArena." + a.arenaName(), true);
+                    }
+                }
                 clearArenas();
                 setArenas();
             }
             
+            //set Projectiles
             addProjectiles();
-            clearProjectiles();
+            if(!config.contains("RW-Projectiles.Fireball"))
+            {
+                System.out.println("[RangedWolves] Updating your config to include Ghast Fireballs");
+                config.set("RW-Projectiles.Fireball", true);
+            }
+            else
+            {
+                clearProjectiles();
+            }
             setProjectiles();
+            
+            //set Skeleton Tamers
+            if(config.getList("RW-Skeleton-Tamers") == null)
+            {
+                System.out.println("[RangedWolves] Upgrading your config to 0.8 standards");
+                initSkeles();
+            }
+            setSkeleStuff();
             
             try
             {
-                config2.save(file);
+                config.save(file);
             }
             catch (Exception e)
             {
@@ -78,12 +115,15 @@ public class RWConfig
      */
     public static void initConfig(File file)
     {
-        config2 = new YamlConfiguration();
+        config = new YamlConfiguration();
         try
         {
-            config2.load(file);
+            config.load(file);
         }
-        catch (Exception e) { /*ignore*/ }
+        catch (Exception e)
+        {
+            System.out.println("[RangedWolves] An Error has occured. Try deleting your config and reloading Ranged Wolves");
+        }
         finally
         {
             worlds = (ArrayList<World>)Bukkit.getServer().getWorlds();
@@ -102,37 +142,68 @@ public class RWConfig
             initProjectiles();
             setProjectiles();
             
+            initSkeles();
+            setSkeleStuff();
+            
             try
             {
-                config2.save(file);
+                config.save(file);
             }
             catch (IOException e)
             {
-                System.out.println("An Error has occured. Try deleting your config and reloading Ranged Wolves");
+                System.out.println("[RangedWolves] An Error has occured. Try deleting your config and reloading Ranged Wolves");
             }
         }
     }
     
-    /**
-     * Returns the Header for the configuration file 
-     * @return the Header for the configuration file
-     */
-    @SuppressWarnings("unused")
-    private static String getHeader()
-    {
-        return "# RangedWolves Config file\n" + 
-               "# Please refer to http://dev.bukkit.org/server-mods/ranged-wolves/ for any questions";
-    }
     
+    //Initialize Methods
     /**
      * Initialize the configuration file with any arenas found
      */
     private static void initArenas()
     {
         for(Arena a : arenas)
-            config2.set("RW-in-MobArena." + a.arenaName(), true);
+            config.set("RW-in-MobArena." + a.arenaName(), true);
     }
     
+    /**
+     * Initialize the configuration file with any worlds found
+     */
+    private static void initWorlds()
+    {
+        for(World w : worlds)
+            config.set("RW-on-Server." + w.getName(), true);
+    }
+    
+    /**
+     * Initialize the Skeleton Tamer settings.
+     * Default set to enabled, 10% chance of occurence, and 1 Max Pet
+     */
+    private static void initSkeles()
+    {
+        config.set("RW-Skeleton-Tamers.Enabled", true);
+        config.set("RW-Skeleton-Tamers.MA-Enabled", true);
+        config.set("RW-Skeleton-Tamers.Chance", 10);
+        config.set("RW-Skeleton-Tamers.Max-Pets", 1);
+    }
+    
+    private static void addProjectiles()
+    {
+        projs.add("Arrow");
+        projs.add("Egg");
+        projs.add("Fireball");
+        projs.add("Snowball");
+    }
+    
+    private static void initProjectiles()
+    {
+        for(String s : projs)
+            config.set("RW-Projectiles." + s, true);
+    }
+    
+    
+    //Setter Methods
     /**
      * Initialize the arenaMap with the settings from the configuration file
      */
@@ -143,22 +214,13 @@ public class RWConfig
             if(arenaMap.get(a) == null)
             {
                 arenaMap.put(a, new LinkedList<Boolean>());
-                arenaMap.get(a).add(config2.getBoolean("RW-in-MobArena." + a.arenaName(), true));
+                arenaMap.get(a).add(config.getBoolean("RW-in-MobArena." + a.arenaName(), true));
             }
             else
             {
-                arenaMap.get(a).add(config2.getBoolean("RW-in-MobArena." + a.arenaName(), true));
+                arenaMap.get(a).add(config.getBoolean("RW-in-MobArena." + a.arenaName(), true));
             }
         }
-    }
-    
-    /**
-     * Initialize the configuration file with any worlds found
-     */
-    private static void initWorlds()
-    {
-        for(World w : worlds)
-            config2.set("RW-on-Server." + w.getName(), true);
     }
     
     /**
@@ -171,26 +233,35 @@ public class RWConfig
             if(worldMap.get(w) == null)
             {
                 worldMap.put(w, new LinkedList<Boolean>());
-                worldMap.get(w).add(config2.getBoolean("RW-on-Server." + w.getName(), true));
+                worldMap.get(w).add(config.getBoolean("RW-on-Server." + w.getName(), true));
             }
             else
             {
-                worldMap.get(w).add(config2.getBoolean("RW-on-Server." + w.getName(), true));
+                worldMap.get(w).add(config.getBoolean("RW-on-Server." + w.getName(), true));
             }
         }
     }
     
-    private static void addProjectiles()
+    private static void setSkeleStuff()
     {
-        projs.add("Arrow");
-        projs.add("Egg");
-        projs.add("Snowball");
-    }
-    
-    private static void initProjectiles()
-    {
-        for(String s : projs)
-            config2.set("RW-Projectiles." + s, true);
+        skeleEnabled = config.getBoolean("RW-Skeleton-Tamers.Enabled");
+        skeleInMobArena = config.getBoolean("RW-Skeleton-Tamers.MA-Enabled");
+        skeleChance = config.getInt("RW-Skeleton-Tamers.Chance");
+        //if someone puts over 100 for the % chance to spawn
+        if(skeleChance > 100)
+            skeleChance = 100;
+        
+        //if someone puts a negative number for the % chance to spawn
+        if(skeleChance < 0)
+            skeleChance = 0;
+        
+        skeleMaxPets = config.getInt("RW-Skeleton-Tamers.Max-Pets");
+        //if someone puts over 5 for the # of maximum pets
+        if(skeleMaxPets > 5)
+            skeleMaxPets = 5;
+        //if someone puts a negative number for the # of maximum pets
+        if(skeleMaxPets < 0)
+            skeleMaxPets = 0;
     }
     
     private static void setProjectiles()
@@ -200,15 +271,17 @@ public class RWConfig
             if(projMap.get(s) == null)
             {
                 projMap.put(s, new LinkedList<Boolean>());
-                projMap.get(s).add(config2.getBoolean("RW-Projectiles." + s, true));
+                projMap.get(s).add(config.getBoolean("RW-Projectiles." + s, true));
             }
             else
             {
-                projMap.get(s).add(config2.getBoolean("RW-Projectiles." + s, true));
+                projMap.get(s).add(config.getBoolean("RW-Projectiles." + s, true));
             }
         }
     }
     
+    
+    //Getter Methods
     /**
      * Check if an arena is allowed to use RW
      * @param arena the arena being checked
@@ -229,11 +302,65 @@ public class RWConfig
         return worldMap.get(world).getFirst();
     }
     
+    /**
+     * Check if a projectile is allowed to be used for RW
+     * @param projName the projectile in question
+     * @return true/false
+     */
     public static boolean RWProj(String projName)
     {
         return projMap.get(projName).getFirst();
     }
     
+    /**
+     * Check if Skeletons are allowed to have pet Wolves
+     * @return true/false
+     */
+    public static boolean getSkeleEnabled()
+    {
+        return skeleEnabled;
+    }
+    
+    /**
+     * Check if Skeletons are allowed to have pet Wolves in an Arena
+     * @return
+     */
+    public static boolean getSkeleInMobArena()
+    {
+        return skeleInMobArena;
+    }
+    
+    /**
+     * Check the chance of a Skeleton Tamer spawning
+     * @return Integer value (0 through 100)
+     */
+    public static int getSkeleChance()
+    {
+        return skeleChance;
+    }
+    
+    /**
+     * Returns the maximum number of allowed Skeleton pets
+     * @return Integer value (0 through 5)
+     */
+    public static int getSkeleMaxPets()
+    {
+        return skeleMaxPets;
+    }
+    
+    /**
+     * Returns the Header for the configuration file 
+     * @return the Header for the configuration file
+     */
+    @SuppressWarnings("unused")
+    private static String getHeader()
+    {
+        return "# RangedWolves Config file\n" + 
+               "# Please refer to http://dev.bukkit.org/server-mods/ranged-wolves/ for any questions";
+    }
+    
+    
+    //Clearing Methods
     /**
      * Clear the arenaMap for reloads/restarts
      * Mainly to ensure no overlaps happen in settings

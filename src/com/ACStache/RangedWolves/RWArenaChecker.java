@@ -1,5 +1,6 @@
 package com.ACStache.RangedWolves;
 
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public class RWArenaChecker
@@ -13,6 +14,14 @@ public class RWArenaChecker
     {
         if(RangedWolves.maHandler != null && RangedWolves.maHandler.isPlayerInArena(player))
             return true; //Mob Arena found and player is in an arena
+        else
+            return false;
+    }
+    
+    public static boolean isMonsterInArena(LivingEntity entity)
+    {
+        if(RangedWolves.maHandler != null && RangedWolves.maHandler.isMonsterInArena(entity))
+            return true; //Mob Arena found and entity is in an arena
         else
             return false;
     }

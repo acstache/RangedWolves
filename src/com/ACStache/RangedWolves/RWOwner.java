@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Wolf;
 
 import com.garbagemule.MobArena.Arena;
@@ -14,6 +15,35 @@ public class RWOwner
     private static HashMap<Arena,HashMap<String,Set<Wolf>>> arenaMap = new HashMap<Arena,HashMap<String,Set<Wolf>>>();
     private static HashMap<String,Set<Wolf>> arenaWolfMap = new HashMap<String,Set<Wolf>>();
     private static HashMap<String,Set<Wolf>> tamedWolfMap = new HashMap<String,Set<Wolf>>();
+    private static HashMap<Skeleton,Set<Wolf>> skeleWolfMap = new HashMap<Skeleton,Set<Wolf>>();
+    
+    /**
+     * method to add wolves from onCreatureSpawn event
+     * @param skele the skeleton who gets the wolf
+     * @param wolf the wolf in question
+     */
+    public static void addWolf(Skeleton skele, Wolf wolf)
+    {
+        if(skeleWolfMap.get(skele) == null)
+        {
+            skeleWolfMap.put(skele, new HashSet<Wolf>());
+            if(!skeleWolfMap.get(skele).contains(wolf))
+            {
+                skeleWolfMap.get(skele).add(wolf);
+                if(RWDebug.getDebug())
+                    System.out.println("[RangedWolves] Wolf " + wolf.getEntityId() + " added to Skeleton " + skele.getEntityId());
+            }
+        }
+        else
+        {
+            if(!skeleWolfMap.get(skele).contains(wolf))
+            {
+                skeleWolfMap.get(skele).add(wolf);
+                if(RWDebug.getDebug())
+                    System.out.println("[RangedWolves] Wolf " + wolf.getEntityId() + " added to Skeleton " + skele.getEntityId());
+            }
+        }
+    }
     
     /**
      * method to add wolves from onTameEntity and onCreatureSpawn events
@@ -29,7 +59,7 @@ public class RWOwner
             {
                 tamedWolfMap.get(playerName).add(wolf);
                 if(RWDebug.getDebug())
-                    System.out.println("Wolf " + wolf.getEntityId() + " added to Player " + playerName);
+                    System.out.println("[RangedWolves] Wolf " + wolf.getEntityId() + " added to Player " + playerName);
             }
         }
         else
@@ -38,7 +68,7 @@ public class RWOwner
             {
                 tamedWolfMap.get(playerName).add(wolf);
                 if(RWDebug.getDebug())
-                    System.out.println("Wolf " + wolf.getEntityId() + " added to Player " + playerName);
+                    System.out.println("[RangedWolves] Wolf " + wolf.getEntityId() + " added to Player " + playerName);
             }
         }
     }
@@ -84,6 +114,29 @@ public class RWOwner
     }
     
     /**
+     * Set all of a Skeleton's pet wolves hostile after he dies
+     * @param skele The Skeleton that died
+     */
+    public static void angryWolf(Skeleton skele)
+    {
+        for(Wolf w : skeleWolfMap.get(skele))
+            w.setAngry(true);
+    }
+    
+    public static void removeWolf(Wolf wolf)
+    {
+        for(Set<Wolf> set : skeleWolfMap.values())
+        {
+            if(set.contains(wolf))
+            {
+                set.remove(wolf);
+                if(RWDebug.getDebug())
+                    System.out.println("[RangedWolves] Wolf " + wolf.getEntityId() + " removed from a Skeleton ");
+            }
+        }
+    }
+    
+    /**
      * method to remove a wolf from a player's list of wolves if it dies
      * @param player the player who just lost a pet
      * @param wolf the wolf that just died
@@ -94,7 +147,7 @@ public class RWOwner
         {
             tamedWolfMap.get(playerName).remove(wolf);
             if(RWDebug.getDebug())
-                System.out.println("Wolf " + wolf.getEntityId() + " removed from Player " + playerName);
+                System.out.println("[RangedWolves] Wolf " + wolf.getEntityId() + " removed from Player " + playerName);
         }
     }
     
@@ -122,6 +175,24 @@ public class RWOwner
             if(set.contains(wolf)) //if the set contains the wolf
                 return true; 
         return false;
+    }
+    
+    public static boolean checkSkeleWolf(Wolf wolf)
+    {
+        for(Set<Wolf> set : skeleWolfMap.values()) //for each set of wolves
+            if(set.contains(wolf)) //if the set contains the wolf
+                return true;
+        return false;
+    }
+    
+    /**
+     * returns the list of pets of the Skeleton
+     * @param skele the owner of the pets
+     * @return the list of pets of the Skeleton
+     */
+    public static Set<Wolf> getPets(Skeleton skele)
+    {
+        return skeleWolfMap.get(skele);
     }
     
     /**
