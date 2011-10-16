@@ -4,3 +4,6 @@ Simply put this into your plugins folder, and it will do it's magic!
 Makes wolves from Mob Arena attack your target when you attack at range.
 Makes wolves you have previously tamed and any wolves you end up taming attack targets as well
     This is for outside of Mob Arenas. They do not help if you're in an arena.
+Makes skeletons have a chance to spawn with a pet wolf, if certain things are disabled, so are
+  skeleton tamers
+    If you have a World or Arena disabled, skeleton tamers won't spawn in them even if enabled
