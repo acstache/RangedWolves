@@ -79,21 +79,21 @@ public class RWConfig
             
             //set Projectiles
             addProjectiles();
-            if(!config.contains("RW-Projectiles.Fireball"))
+            for(String p : projs)
             {
-                System.out.println("[RangedWolves] Updating your config to include Ghast Fireballs");
-                config.set("RW-Projectiles.Fireball", true);
+                if(!config.contains("RW-Projectiles." + p))
+                {
+                    System.out.println("[RangedWolves] Updating your config to include Projectile: " + p);
+                    config.set("RW-Projectiles." + p, true);
+                }
             }
-            else
-            {
-                clearProjectiles();
-            }
+            clearProjectiles();
             setProjectiles();
             
             //set Skeleton Tamers
-            if(config.getList("RW-Skeleton-Tamers") == null)
+            if(!config.contains("RW-Skeleton-Tamers"))
             {
-                System.out.println("[RangedWolves] Upgrading your config to 0.8 standards");
+                System.out.println("[RangedWolves] Adding in Skeleton Tamers configuration options");
                 initSkeles();
             }
             setSkeleStuff();

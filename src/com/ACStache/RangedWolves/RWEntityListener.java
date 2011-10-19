@@ -3,6 +3,7 @@ package com.ACStache.RangedWolves;
 import java.util.HashSet;
 import java.util.Random;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
@@ -24,18 +25,21 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityListener;
 import org.bukkit.event.entity.EntityTameEvent;
+import org.bukkit.plugin.Plugin;
 
 import com.garbagemule.MobArena.Arena;
 
 public class RWEntityListener extends EntityListener
 {
     final RangedWolves plugin;
+    private Plugin mobArena;
     private Random r = new Random();
     private int skeleChance, skeleMaxPets;
     
     public RWEntityListener(RangedWolves instance)
     {
         plugin = instance;
+        mobArena = Bukkit.getPluginManager().getPlugin("MobArena");
     }
     
     public void onEntityDamage(EntityDamageEvent event)
@@ -58,7 +62,7 @@ public class RWEntityListener extends EntityListener
         Entity cause = ((EntityDamageByEntityEvent)event).getDamager();
         if(!(cause instanceof Projectile)) {return;}
         
-        //if projectile shooter isn't a player, check for Skeleton
+        //if projectile shooter isn't a player
         Projectile proj = (Projectile)cause;
         if(!(proj.getShooter() instanceof Player))
         {
@@ -112,48 +116,80 @@ public class RWEntityListener extends EntityListener
                 }
             }
         }
-        
-        //4 checks for projectiles from config
-        if(proj instanceof Arrow && !RWConfig.RWProj("Arrow")) {return;}
-        if(proj instanceof Egg && !RWConfig.RWProj("Egg")) {return;}
-        if(proj instanceof Fireball && !RWConfig.RWProj("Fireball")) {return;}
-        if(proj instanceof Snowball && !RWConfig.RWProj("Snowball")) {return;}
-        
-        //get the shooter of the projectile
-        Player player = (Player)proj.getShooter();
-        
-        //if shooter is in an arena match
-        if(RWArenaChecker.isPlayerInArena(player))
+        //if the shooter is a player
+        else
         {
-            //get the arena the player is in & the player's pets
-            Arena arena = RangedWolves.am.getArenaWithPlayer(player);
-            boolean arenaPvP = arena.isPvpEnabled();
-            HashSet<Wolf> pets = (HashSet<Wolf>)RWOwner.getPets(player);
+            //4 checks for projectiles from config
+            if(proj instanceof Arrow && !RWConfig.RWProj("Arrow")) {return;}
+            if(proj instanceof Egg && !RWConfig.RWProj("Egg")) {return;}
+            if(proj instanceof Fireball && !RWConfig.RWProj("Fireball")) {return;}
+            if(proj instanceof Snowball && !RWConfig.RWProj("Snowball")) {return;}
             
-            //if RW is not allowed in the arena, exit
-            if(!RWConfig.RWinArena(arena)) {return;}
+            //get the shooter of the projectile
+            Player player = (Player)proj.getShooter();
             
-            //if the target is a wolf
-            if(newTarget instanceof Wolf)
+            //if shooter is in an arena match
+            if(RWArenaChecker.isPlayerInArena(player))
             {
-                //set it as a wolf
-                Wolf wolf = (Wolf)newTarget;
+                //get the arena the player is in & the player's pets
+                Arena arena = RangedWolves.am.getArenaWithPlayer(player);
+                boolean arenaPvP = arena.isPvpEnabled();
+                HashSet<Wolf> pets = (HashSet<Wolf>)RWOwner.getPets(player);
                 
-                //if it has an owner
-                if(RWOwner.checkArenaWolf(wolf))
+                //if RW is not allowed in the arena, exit
+                if(!RWConfig.RWinArena(arena)) {return;}
+                
+                //if the target is a wolf
+                if(newTarget instanceof Wolf)
                 {
-                    //if the player is the wolf's owner
-                    if(player == (Player)wolf.getOwner())
+                    //set it as a wolf
+                    Wolf wolf = (Wolf)newTarget;
+                    
+                    //if it has an owner
+                    if(RWOwner.checkArenaWolf(wolf))
+                    {
+                        //if the player is the wolf's owner
+                        if(player == (Player)wolf.getOwner())
+                        {
+                            event.setCancelled(true);
+                        }
+                        //if the wolf has an owner other than the player
+                        else
+                        {
+                            //if arena pvp is enabled
+                            if(arenaPvP)
+                            {
+                                //set wolf as your wolves' target
+                                setArenaTarget(pets, newTarget);
+                            }
+                            //else if arena pvp is disabled
+                            else
+                            {
+                                event.setCancelled(true);
+                            }
+                        }
+                    }
+                    //wolf is not a pet
+                    else
+                    {
+                        setArenaTarget(pets, newTarget);
+                    }
+                }
+                //else if the target is a player
+                else if(newTarget instanceof Player)
+                {
+                    //if you manage to shoot yourself
+                    if(player == (Player)newTarget)
                     {
                         event.setCancelled(true);
                     }
-                    //if the wolf has an owner other than the player
+                    //if you shoot another player
                     else
                     {
                         //if arena pvp is enabled
                         if(arenaPvP)
                         {
-                            //set wolf as your wolves' target
+                            //set player as your wolves' target
                             setArenaTarget(pets, newTarget);
                         }
                         //else if arena pvp is disabled
@@ -163,101 +199,72 @@ public class RWEntityListener extends EntityListener
                         }
                     }
                 }
-                //wolf is not a pet
+                //else the target is not a wolf or player
                 else
                 {
                     setArenaTarget(pets, newTarget);
                 }
             }
-            //else if the target is a player
-            else if(newTarget instanceof Player)
-            {
-                //if you manage to shoot yourself
-                if(player == (Player)newTarget)
-                {
-                    event.setCancelled(true);
-                }
-                //if you shoot another player
-                else
-                {
-                    //if arena pvp is enabled
-                    if(arenaPvP)
-                    {
-                        //set player as your wolves' target
-                        setArenaTarget(pets, newTarget);
-                    }
-                    //else if arena pvp is disabled
-                    else
-                    {
-                        event.setCancelled(true);
-                    }
-                }
-            }
-            //else the target is not a wolf or player
+            //if shooter is not in an arena match
             else
             {
-                setArenaTarget(pets, newTarget);
-            }
-        }
-        //if shooter is not in an arena match
-        else
-        {
-            //get the player's pets, world, and world's pvp 
-            World world = player.getWorld();
-            HashSet<Wolf> pets = (HashSet<Wolf>)RWOwner.getPets(player);
-            boolean worldPvP = world.getPVP();
-            
-            //if RW not allowed in world, exit
-            if(!RWConfig.RWinWorld(world)) {return;}
-            
-            //if the target is a wolf
-            if(newTarget instanceof Wolf)
-            {
-                //set it as a wolf
-                Wolf wolf = (Wolf)newTarget;
+                //get the player's pets, world, and world's pvp 
+                World world = player.getWorld();
+                HashSet<Wolf> pets = (HashSet<Wolf>)RWOwner.getPets(player);
+                boolean worldPvP = world.getPVP();
                 
-                //if it has an owner
-                if(RWOwner.checkWorldWolf(wolf))
+                //if RW not allowed in world, exit
+                if(!RWConfig.RWinWorld(world)) {return;}
+                
+                //if the target is a wolf
+                if(newTarget instanceof Wolf)
+                {
+                    //set it as a wolf
+                    Wolf wolf = (Wolf)newTarget;
+                    
+                    //if it has an owner
+                    if(RWOwner.checkWorldWolf(wolf))
+                    {
+                        //if world pvp is enabled
+                        if(worldPvP)
+                        {
+                            //wolf is the shooter's pet
+                            if(player.equals(((Player)wolf.getOwner()))) 
+                            {
+                                event.setCancelled(true);
+                            }
+                            //wolf is not the shooter's pet
+                            else
+                            {
+                                setWorldTarget(pets, newTarget);
+                            }
+                        }
+                        //else world pvp is disabled
+                        else
+                        {
+                            event.setCancelled(true);
+                        }
+                    }
+                    //wolf is not a pet
+                    else
+                    {
+                        setWorldTarget(pets, newTarget);
+                    }
+                }
+                //if the target is a player
+                else if(newTarget instanceof Player)
                 {
                     //if world pvp is enabled
                     if(worldPvP)
                     {
-                        //wolf is the shooter's pet
-                        if(player.equals(((Player)wolf.getOwner()))) 
-                        {
-                            event.setCancelled(true);
-                        }
-                        //wolf is not the shooter's pet
-                        else
-                        {
-                            setWorldTarget(pets, newTarget);
-                        }
-                    }
-                    //else world pvp is disabled
-                    else
-                    {
-                        event.setCancelled(true);
+                        setWorldTarget(pets, newTarget);
                     }
                 }
-                //wolf is not a pet
+                //if the target is not a wolf or player
                 else
                 {
                     setWorldTarget(pets, newTarget);
                 }
-            }
-            //if the target is a player
-            else if(newTarget instanceof Player)
-            {
-                //if world pvp is enabled
-                if(worldPvP)
-                {
-                    setWorldTarget(pets, newTarget);
-                }
-            }
-            //if the target is not a wolf or player
-            else
-            {
-                setWorldTarget(pets, newTarget);
             }
         }
     }
@@ -285,7 +292,10 @@ public class RWEntityListener extends EntityListener
             //get the dead wolf
             Wolf wolf = (Wolf)dead;
             //if the wolf that died is in an arena, ignore it
-            if(RangedWolves.am.getArenaWithPet(wolf) != null) {return;}
+            if(mobArena != null && mobArena.isEnabled())
+            {
+                if(RangedWolves.am.getArenaWithPet(wolf) != null) {return;}
+            }
             //if the wolf isn't attached to a player, check it versus Skeleton pets
             if(!RWOwner.checkWorldWolf(wolf))
             {
@@ -336,7 +346,10 @@ public class RWEntityListener extends EntityListener
             //get the spawned wolf
             Wolf wolf = (Wolf)spawn;
             //if it was spawned in an arena, ignore it
-            if(RangedWolves.am.getArenaWithPet(wolf) != null) {return;}
+            if(mobArena != null && mobArena.isEnabled())
+            {
+                if(RangedWolves.am.getArenaWithPet(wolf) != null) {return;}
+            }
             //if the wolf isn't attached to a player, ignore it
             if(!RWOwner.checkWorldWolf(wolf)) {return;}
             
