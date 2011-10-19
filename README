@@ -7,3 +7,5 @@ Makes wolves you have previously tamed and any wolves you end up taming attack t
 Makes skeletons have a chance to spawn with a pet wolf, if certain things are disabled, so are
   skeleton tamers
     If you have a World or Arena disabled, skeleton tamers won't spawn in them even if enabled
+Between updates if the config file changes, I will make sure you don't need to delete your
+  current config. I will make it check for any differences and add them in.
