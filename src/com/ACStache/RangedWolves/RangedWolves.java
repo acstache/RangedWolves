@@ -131,6 +131,26 @@ public class RangedWolves extends JavaPlugin
                         ((Player)sender).sendMessage(ChatColor.AQUA + "RW: You don't have permission to do that");
                     }
                 }
+                else if(args[0].equalsIgnoreCase("reloadMA"))
+                {
+                    if(sender instanceof Player)
+                    {
+                        if(((Player)sender).isOp())
+                        {
+                            setupMobArena();
+                            ((Player)sender).sendMessage(ChatColor.AQUA + "RW: Mob Arena setup code rerun");
+                        }
+                        else
+                        {
+                            ((Player)sender).sendMessage(ChatColor.AQUA + "RW: You don't have permission to do that");
+                        }
+                    }
+                    else
+                    {
+                        setupMobArena();
+                        log.info("[" + info.getName() + "] Mob Arena setup code rerun");
+                    }
+                }
                 else if(args[0].equalsIgnoreCase("retro"))
                 {
                     if(sender instanceof Player)
