@@ -11,3 +11,4 @@ Between updates if the config file changes, I will make sure you don't need to d
   current config. I will make it check for any differences and add them in.
 If your server decides to load RangedWolves before MobArena, use the command "/rw reloadMA", as
   this should rerun the code that sets up the Mob Arena stuff.
+    Follow this IMMEDIATELY by "/rw reload" to avoid any errors
