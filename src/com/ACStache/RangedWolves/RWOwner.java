@@ -123,6 +123,10 @@ public class RWOwner
             w.setAngry(true);
     }
     
+    /**
+     * method to remove a wolf from a skeleton's list of wolves if it dies
+     * @param wolf the wolf that just died
+     */
     public static void removeWolf(Wolf wolf)
     {
         for(Set<Wolf> set : skeleWolfMap.values())
@@ -134,6 +138,15 @@ public class RWOwner
                     System.out.println("[RangedWolves] Wolf " + wolf.getEntityId() + " removed from a Skeleton ");
             }
         }
+    }
+    
+    /**
+     * method to remove a skeleton from the set of Skeleton Tamers
+     * @param skele the skeleton that just died
+     */
+    public static void removeSkele(Skeleton skele)
+    {
+        skeleWolfMap.remove(skele);
     }
     
     /**

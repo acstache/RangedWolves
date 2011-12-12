@@ -139,10 +139,12 @@ public class RangedWolves extends JavaPlugin
                         {
                             setupMobArena();
                             ((Player)sender).sendMessage(ChatColor.AQUA + "RW: Mob Arena setup code rerun");
+                            RWConfig.loadConfig(file);
                         }
                         else
                         {
                             ((Player)sender).sendMessage(ChatColor.AQUA + "RW: You don't have permission to do that");
+                            RWConfig.loadConfig(file);
                         }
                     }
                     else

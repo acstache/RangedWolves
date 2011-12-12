@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
+import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.CreatureType;
 import org.bukkit.entity.Egg;
@@ -325,16 +326,34 @@ public class RWEntityListener extends EntityListener
         }
         else if(dead instanceof Skeleton)
         {
-            Skeleton skele = (Skeleton)dead;
-            HashSet<Wolf> pets = (HashSet<Wolf>)RWOwner.getPets(skele);
+            final Skeleton skele = (Skeleton)dead;
+            final HashSet<Wolf> pets = (HashSet<Wolf>)RWOwner.getPets(skele);
             //if this particular Skeleton has no pets, ignore
             if(pets == null) {return;}
             
             //upon death, set his pets to Angry/Hostile
+            //TODO - make this possibly configurable, get consensus from users
             for(Wolf w : pets)
             {
                 w.setAngry(true);
             }
+            
+            //After 10 seconds (200 server ticks), angry wolves die.
+            Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable()
+            {
+                public void run()
+                {
+                    for(Wolf w : pets)
+                    {
+                        if(!w.isDead())
+                        {
+                            w.setHealth(0);
+                            RWOwner.removeWolf(w);
+                        }
+                    }
+                    RWOwner.removeSkele(skele);
+                }
+            }, 200);
         }
     }
     
@@ -354,9 +373,11 @@ public class RWEntityListener extends EntityListener
             if(!RWOwner.checkWorldWolf(wolf)) {return;}
             
             Player owner = (Player)wolf.getOwner();
-            if(owner != null) //if there is an owner
+            //if there is an owner
+            if(owner != null)
             {
-                RWOwner.addWolf(owner.getName(), wolf); //add it
+                //add it
+                RWOwner.addWolf(owner.getName(), wolf);
             }
         }
         else if(spawn instanceof Skeleton)
@@ -379,14 +400,15 @@ public class RWEntityListener extends EntityListener
             skeleChance = RWConfig.getSkeleChance();
             skeleMaxPets = RWConfig.getSkeleMaxPets();
             
-            if(r.nextInt(100) + 1 < skeleChance)
+            if(r.nextInt(100) + 1 <= skeleChance)
             {
                 World world = skele.getWorld();
                 int petNum = r.nextInt(skeleMaxPets) + 1;
-                for(int i = 0; i <= petNum; i++)
+                for(int i = 0; i < petNum; i++)
                 {
                     Wolf wolf = (Wolf)world.spawnCreature(skele.getLocation(), CreatureType.WOLF);
                     wolf.setTamed(true);
+                    wolf.setOwner((AnimalTamer)skele);
                     RWOwner.addWolf(skele, wolf);
                 }
             }
