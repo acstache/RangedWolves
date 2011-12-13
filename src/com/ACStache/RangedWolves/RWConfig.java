@@ -22,8 +22,6 @@ public class RWConfig
     private static LinkedList<Arena> arenas;
     private static HashMap<String, LinkedList<Boolean>> projMap = new HashMap<String, LinkedList<Boolean>>();
     private static LinkedList<String> projs = new LinkedList<String>();
-    private static boolean skeleEnabled, skeleInMobArena;
-    private static int skeleChance, skeleMaxPets;
     
     /**
      * Load/reload the configuration file
@@ -90,13 +88,12 @@ public class RWConfig
             clearProjectiles();
             setProjectiles();
             
-            //set Skeleton Tamers
-            if(!config.contains("RW-Skeleton-Tamers"))
+            //remove Skeleton Tamers
+            if(config.contains("RW-Skeleton-Tamers"))
             {
-                System.out.println("[RangedWolves] Adding in Skeleton Tamers configuration options");
-                initSkeles();
+                System.out.println("[RangedWolves] Removing Skeleton Tamers configuration options");
+                removeSkeles();
             }
-            setSkeleStuff();
             
             try
             {
@@ -142,9 +139,6 @@ public class RWConfig
             initProjectiles();
             setProjectiles();
             
-            initSkeles();
-            setSkeleStuff();
-            
             try
             {
                 config.save(file);
@@ -177,15 +171,15 @@ public class RWConfig
     }
     
     /**
-     * Initialize the Skeleton Tamer settings.
-     * Default set to enabled, 10% chance of occurence, and 1 Max Pet
+     * remove the Skeleton Tamer code, as it currently isn't possible to do
      */
-    private static void initSkeles()
+    private static void removeSkeles()
     {
-        config.set("RW-Skeleton-Tamers.Enabled", true);
-        config.set("RW-Skeleton-Tamers.MA-Enabled", true);
-        config.set("RW-Skeleton-Tamers.Chance", 10);
-        config.set("RW-Skeleton-Tamers.Max-Pets", 1);
+        config.set("RW-Skeleton-Tamers.Enabled", null);
+        config.set("RW-Skeleton-Tamers.MA-Enabled", null);
+        config.set("RW-Skeleton-Tamers.Chance", null);
+        config.set("RW-Skeleton-Tamers.Max-Pets", null);
+        config.set("RW-Skeleton-Tamers", null);
     }
     
     private static void addProjectiles()
@@ -193,7 +187,9 @@ public class RWConfig
         projs.add("Arrow");
         projs.add("Egg");
         projs.add("Fireball");
+        projs.add("Small-Fireball");
         projs.add("Snowball");
+        projs.add("Potions");
     }
     
     private static void initProjectiles()
@@ -242,28 +238,6 @@ public class RWConfig
         }
     }
     
-    private static void setSkeleStuff()
-    {
-        skeleEnabled = config.getBoolean("RW-Skeleton-Tamers.Enabled");
-        skeleInMobArena = config.getBoolean("RW-Skeleton-Tamers.MA-Enabled");
-        skeleChance = config.getInt("RW-Skeleton-Tamers.Chance");
-        //if someone puts over 100 for the % chance to spawn
-        if(skeleChance > 100)
-            skeleChance = 100;
-        
-        //if someone puts a negative number for the % chance to spawn
-        if(skeleChance < 0)
-            skeleChance = 0;
-        
-        skeleMaxPets = config.getInt("RW-Skeleton-Tamers.Max-Pets");
-        //if someone puts over 5 for the # of maximum pets
-        if(skeleMaxPets > 5)
-            skeleMaxPets = 5;
-        //if someone puts a negative number for the # of maximum pets
-        if(skeleMaxPets < 0)
-            skeleMaxPets = 0;
-    }
-    
     private static void setProjectiles()
     {
         for(String s : projs)
@@ -310,42 +284,6 @@ public class RWConfig
     public static boolean RWProj(String projName)
     {
         return projMap.get(projName).getFirst();
-    }
-    
-    /**
-     * Check if Skeletons are allowed to have pet Wolves
-     * @return true/false
-     */
-    public static boolean getSkeleEnabled()
-    {
-        return skeleEnabled;
-    }
-    
-    /**
-     * Check if Skeletons are allowed to have pet Wolves in an Arena
-     * @return
-     */
-    public static boolean getSkeleInMobArena()
-    {
-        return skeleInMobArena;
-    }
-    
-    /**
-     * Check the chance of a Skeleton Tamer spawning
-     * @return Integer value (0 through 100)
-     */
-    public static int getSkeleChance()
-    {
-        return skeleChance;
-    }
-    
-    /**
-     * Returns the maximum number of allowed Skeleton pets
-     * @return Integer value (0 through 5)
-     */
-    public static int getSkeleMaxPets()
-    {
-        return skeleMaxPets;
     }
     
     /**

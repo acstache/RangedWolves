@@ -23,31 +23,33 @@ public class RWPlayerListener extends PlayerListener
     public void onPlayerTeleport(PlayerTeleportEvent event)
     {
         World world = event.getPlayer().getWorld();
-        if(!worlds.contains(world))
+        //if the world has already been checked, ignore it
+        if(worlds.contains(world)) {return;}
+        
+        for(LivingEntity e : world.getLivingEntities())
         {
-            for(LivingEntity e : world.getLivingEntities())
+            if(e instanceof Wolf)
             {
-                if(e instanceof Wolf)
+                Wolf wolf = (Wolf)e;
+                if(wolf.getOwner() instanceof OfflinePlayer)
                 {
-                    Wolf wolf = (Wolf)e;
-                    if(wolf.getOwner() instanceof OfflinePlayer)
+                    OfflinePlayer offPlayer = (OfflinePlayer)wolf.getOwner();
+                    if(offPlayer != null)
                     {
-                        OfflinePlayer offPlayer = (OfflinePlayer)wolf.getOwner();
-                        if(offPlayer != null)
-                        {
-                            RWOwner.addWolf(offPlayer.getName(), wolf);
-                        }
+                        RWOwner.addWolf(offPlayer.getName(), wolf);
                     }
-                    else
+                }
+                else
+                {
+                    Player owner = (Player)wolf.getOwner();
+                    if(owner != null)
                     {
-                        Player owner = (Player)wolf.getOwner();
-                        if(owner != null)
-                        {
-                            RWOwner.addWolf(owner.getName(), wolf);
-                        }
+                        RWOwner.addWolf(owner.getName(), wolf);
                     }
                 }
             }
         }
+        
+        worlds.add(world);
     }
 }
