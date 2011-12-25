@@ -77,6 +77,9 @@ public class RWEntityListener extends EntityListener
         //if shooter is in an arena match
         if(RWArenaChecker.isPlayerInArena(player))
         {
+            //if the player does not have permission to use this in arenas, ignore
+            if(!player.hasPermission("RangedWolves.Arenas")) {return;}
+            
             //get the arena the player is in & the player's pets
             Arena arena = RangedWolves.am.getArenaWithPlayer(player);
             boolean arenaPvP = arena.isPvpEnabled();
@@ -154,6 +157,9 @@ public class RWEntityListener extends EntityListener
         //if shooter is not in an arena match
         else
         {
+            //if the player does not have permission to use this in worlds, ignore
+            if(!player.hasPermission("RangedWolves.Worlds")) {return;}
+            
             //get the player's pets, world, and world's pvp 
             World world = player.getWorld();
             HashSet<Wolf> pets = (HashSet<Wolf>)RWOwner.getPets(player);
@@ -294,7 +300,7 @@ public class RWEntityListener extends EntityListener
      * @param pets the pets of the Tamer
      * @param target the Entity being attacked
      */
-    public void setArenaTarget(HashSet<Wolf> pets, LivingEntity target)
+    private void setArenaTarget(HashSet<Wolf> pets, LivingEntity target)
     {
         //if player doesn't have pets, exit
         if(pets == null) {return;}
@@ -316,7 +322,7 @@ public class RWEntityListener extends EntityListener
      * @param pets the pets of the Tamer
      * @param target the Entity being attacked
      */
-    public void setWorldTarget(HashSet<Wolf> pets, LivingEntity target)
+    private void setWorldTarget(HashSet<Wolf> pets, LivingEntity target)
     {
         //if player doesn't have pets, exit
         if(pets == null) {return;}

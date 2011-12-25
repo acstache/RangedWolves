@@ -48,8 +48,8 @@ public class RangedWolves extends JavaPlugin
         if(!dir.exists())
         {
             dir.mkdir();
-            log.info("[" + info.getName() + "] No config found. Generating a default config"); 
-            RWConfig.initConfig(file);
+            log.info("[" + info.getName() + "] No config found. Generating a default config");
+            RWConfig.loadConfig(file);
         }
         else
         {
@@ -96,7 +96,7 @@ public class RangedWolves extends JavaPlugin
                     if((sender instanceof Player && ((Player)sender).isOp()) || !(sender instanceof Player))
                     {
                         RWDebug.setDebug(!(RWDebug.getDebug()));
-                        if(sender instanceof Player)
+                        if(sender instanceof Player && ((Player)sender).hasPermission("RangedWolves.Debug"))
                         {
                             if(RWDebug.getDebug())
                                 ((Player)sender).sendMessage(ChatColor.AQUA + "RW: Debug Mode Activated");
@@ -118,7 +118,7 @@ public class RangedWolves extends JavaPlugin
                 }
                 else if(args[0].equalsIgnoreCase("reload"))
                 {
-                    if((sender instanceof Player && ((Player)sender).isOp()) || !(sender instanceof Player))
+                    if((sender instanceof Player && ((Player)sender).hasPermission("RangedWolves.Reload")) || !(sender instanceof Player))
                     {
                         RWConfig.loadConfig(file);
                         if(sender instanceof Player)
@@ -135,7 +135,7 @@ public class RangedWolves extends JavaPlugin
                 {
                     if(sender instanceof Player)
                     {
-                        if(((Player)sender).isOp())
+                        if(sender instanceof Player && ((Player)sender).hasPermission("RangedWolves.Reload") || !(sender instanceof Player))
                         {
                             setupMobArena();
                             ((Player)sender).sendMessage(ChatColor.AQUA + "RW: Mob Arena setup code rerun");
@@ -144,7 +144,6 @@ public class RangedWolves extends JavaPlugin
                         else
                         {
                             ((Player)sender).sendMessage(ChatColor.AQUA + "RW: You don't have permission to do that");
-                            RWConfig.loadConfig(file);
                         }
                     }
                     else
@@ -155,7 +154,7 @@ public class RangedWolves extends JavaPlugin
                 }
                 else if(args[0].equalsIgnoreCase("retro"))
                 {
-                    if(sender instanceof Player)
+                    if(sender instanceof Player && ((Player)sender).hasPermission("RangedWolves.Retro"))
                     {
                         Player player = (Player)sender;
                         int wolvesAdded = 0;
@@ -190,15 +189,17 @@ public class RangedWolves extends JavaPlugin
                 else
                 {
                     if(sender instanceof Player)
-                    {
-                        ((Player)sender).sendMessage(ChatColor.AQUA + "Ranged Wolves version " + info.getVersion());
-                        ((Player)sender).sendMessage(ChatColor.AQUA + "Please type '/rw debug', '/rw reload', or '/rw retro'");
-                    }
+                        ((Player)sender).sendMessage(ChatColor.AQUA + "Please type '/rw debug', '/rw reload', '/rw reloadMA, or '/rw retro'");
                     else
-                    {
-                        log.info("[" + info.getName() + "] Please type 'rw debug' or 'rw reload'");
-                    }
+                        log.info("[" + info.getName() + "] Please type 'rw debug', 'rw reload', or 'rw reloadMA'");
                 }
+            }
+            else
+            {
+                if(sender instanceof Player)
+                    ((Player)sender).sendMessage(ChatColor.AQUA + "Ranged Wolves version " + info.getVersion());
+                else
+                    log.info("[" + info.getName() + "] version " + info.getVersion());
             }
         }
         return true;

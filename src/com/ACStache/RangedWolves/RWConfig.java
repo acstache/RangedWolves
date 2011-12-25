@@ -2,7 +2,6 @@ package com.ACStache.RangedWolves;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -30,6 +29,16 @@ public class RWConfig
     public static void loadConfig(File file)
     {
         config = new YamlConfiguration();
+
+        //prepare lists for use in config maps
+        worlds = (ArrayList<World>)Bukkit.getServer().getWorlds();
+        if(RangedWolves.maHandler != null)
+        {
+            RangedWolves.am.initialize();
+            arenas = (LinkedList<Arena>)RangedWolves.am.getEnabledArenas();
+        }
+        addProjectiles();
+        
         try
         {
             config.load(file);
@@ -37,7 +46,11 @@ public class RWConfig
         catch (FileNotFoundException e)
         {
             System.out.println("[RangedWolves] No config found. Generating a default config");
-            initConfig(file);
+            
+            initWorlds();
+            if(RangedWolves.maHandler != null)
+                initArenas();
+            initProjectiles();
         }
         catch (Exception e)
         {
@@ -46,7 +59,6 @@ public class RWConfig
         finally
         {
             //set Worlds
-            worlds = (ArrayList<World>)Bukkit.getServer().getWorlds();
             for(World w : worlds)
             {
                 if(!config.contains("RW-on-Server." + w.getName()))
@@ -61,8 +73,6 @@ public class RWConfig
             //set Arenas
             if(RangedWolves.maHandler != null)
             {
-                RangedWolves.am.initialize();
-                arenas = (LinkedList<Arena>)RangedWolves.am.getEnabledArenas();
                 for(Arena a : arenas)
                 {
                     if(!config.contains("RW-in-MobArena." + a.arenaName()))
@@ -76,7 +86,6 @@ public class RWConfig
             }
             
             //set Projectiles
-            addProjectiles();
             for(String p : projs)
             {
                 if(!config.contains("RW-Projectiles." + p))
@@ -106,61 +115,8 @@ public class RWConfig
         }
     }
     
-    /**
-     * Initialize the configuration file
-     * @param file the configuration file
-     */
-    public static void initConfig(File file)
-    {
-        config = new YamlConfiguration();
-        try
-        {
-            config.load(file);
-        }
-        catch (Exception e)
-        {
-            System.out.println("[RangedWolves] An Error has occured. Try deleting your config and reloading Ranged Wolves");
-        }
-        finally
-        {
-            worlds = (ArrayList<World>)Bukkit.getServer().getWorlds();
-            initWorlds();
-            setWorlds();
-            
-            if(RangedWolves.maHandler != null)
-            {
-                RangedWolves.am.initialize();
-                arenas = (LinkedList<Arena>)RangedWolves.am.getEnabledArenas();
-                initArenas();
-                setArenas();
-            }
-            
-            addProjectiles();
-            initProjectiles();
-            setProjectiles();
-            
-            try
-            {
-                config.save(file);
-            }
-            catch (IOException e)
-            {
-                System.out.println("[RangedWolves] An Error has occured. Try deleting your config and reloading Ranged Wolves");
-            }
-        }
-    }
-    
     
     //Initialize Methods
-    /**
-     * Initialize the configuration file with any arenas found
-     */
-    private static void initArenas()
-    {
-        for(Arena a : arenas)
-            config.set("RW-in-MobArena." + a.arenaName(), true);
-    }
-    
     /**
      * Initialize the configuration file with any worlds found
      */
@@ -171,17 +127,17 @@ public class RWConfig
     }
     
     /**
-     * remove the Skeleton Tamer code, as it currently isn't possible to do
+     * Initialize the configuration file with any arenas found
      */
-    private static void removeSkeles()
+    private static void initArenas()
     {
-        config.set("RW-Skeleton-Tamers.Enabled", null);
-        config.set("RW-Skeleton-Tamers.MA-Enabled", null);
-        config.set("RW-Skeleton-Tamers.Chance", null);
-        config.set("RW-Skeleton-Tamers.Max-Pets", null);
-        config.set("RW-Skeleton-Tamers", null);
+        for(Arena a : arenas)
+            config.set("RW-in-MobArena." + a.arenaName(), true);
     }
     
+    /**
+     * Create a list of currently known projectiles
+     */
     private static void addProjectiles()
     {
         projs.add("Arrow");
@@ -192,6 +148,9 @@ public class RWConfig
         projs.add("Potions");
     }
     
+    /**
+     * Initialize the configuration file with all currently known projectiles
+     */
     private static void initProjectiles()
     {
         for(String s : projs)
@@ -200,6 +159,25 @@ public class RWConfig
     
     
     //Setter Methods
+    /**
+     * Initialize the worldMap with the settings from the configuration file
+     */
+    private static void setWorlds()
+    {
+        for(World w : worlds)
+        {
+            if(worldMap.get(w) == null)
+            {
+                worldMap.put(w, new LinkedList<Boolean>());
+                worldMap.get(w).add(config.getBoolean("RW-on-Server." + w.getName(), true));
+            }
+            else
+            {
+                worldMap.get(w).add(config.getBoolean("RW-on-Server." + w.getName(), true));
+            }
+        }
+    }
+    
     /**
      * Initialize the arenaMap with the settings from the configuration file
      */
@@ -220,24 +198,8 @@ public class RWConfig
     }
     
     /**
-     * Initialize the worldMap with the settings from the configuration file
+     * Initialize the projMap with the settins from the configuration file
      */
-    private static void setWorlds()
-    {
-        for(World w : worlds)
-        {
-            if(worldMap.get(w) == null)
-            {
-                worldMap.put(w, new LinkedList<Boolean>());
-                worldMap.get(w).add(config.getBoolean("RW-on-Server." + w.getName(), true));
-            }
-            else
-            {
-                worldMap.get(w).add(config.getBoolean("RW-on-Server." + w.getName(), true));
-            }
-        }
-    }
-    
     private static void setProjectiles()
     {
         for(String s : projs)
@@ -286,28 +248,8 @@ public class RWConfig
         return projMap.get(projName).getFirst();
     }
     
-    /**
-     * Returns the Header for the configuration file 
-     * @return the Header for the configuration file
-     */
-    @SuppressWarnings("unused")
-    private static String getHeader()
-    {
-        return "# RangedWolves Config file\n" + 
-               "# Please refer to http://dev.bukkit.org/server-mods/ranged-wolves/ for any questions";
-    }
-    
     
     //Clearing Methods
-    /**
-     * Clear the arenaMap for reloads/restarts
-     * Mainly to ensure no overlaps happen in settings
-     */
-    public static void clearArenas()
-    {
-        arenaMap.clear();
-    }
-    
     /**
      * Clear the worldMap for reloads/restarts
      * Mainly to ensure no overlaps happen in settings
@@ -318,11 +260,32 @@ public class RWConfig
     }
     
     /**
+     * Clear the arenaMap for reloads/restarts
+     * Mainly to ensure no overlaps happen in settings
+     */
+    public static void clearArenas()
+    {
+        arenaMap.clear();
+    }
+    
+    /**
      * Clear the projMap for reloads/restarts
      * Mainly to ensure no overlaps happen in settings
      */
     public static void clearProjectiles()
     {
         projMap.clear();
+    }
+    
+    /**
+     * remove the Skeleton Tamer code, as it currently isn't possible to do
+     */
+    private static void removeSkeles()
+    {
+        config.set("RW-Skeleton-Tamers.Enabled", null);
+        config.set("RW-Skeleton-Tamers.MA-Enabled", null);
+        config.set("RW-Skeleton-Tamers.Chance", null);
+        config.set("RW-Skeleton-Tamers.Max-Pets", null);
+        config.set("RW-Skeleton-Tamers", null);
     }
 }
