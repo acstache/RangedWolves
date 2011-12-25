@@ -1,6 +1,6 @@
 name: RangedWolves
 main: com.ACStache.RangedWolves.RangedWolves
-version: 0.8.4
+version: 0.8.5
 author: ACStache
 description: Make Wolves attack your target on Ranged Attacks
 softdepend: [MobArena]
@@ -8,7 +8,37 @@ commands:
     rw:
         description: reload the config or activate older wolves
         usage: |
-               /rw debug
-               /rw reload
-               /rw reloadMA
-               /rw retro
+               /rw debug                - Toggle Debug mode (limited use)
+               /rw reload               - Reload the Configuration
+               /rw reloadMA             - Rerun the Mob Arena setup code
+               /rw retro                - Add any surrounding wolves to their respective owner
+        permission: RangedWolves.Reload
+        permission: RangedWolves.Worlds
+        permission: RangedWolves.Arenas
+        permission: RangedWolves.Debug
+        permission: RangedWolves.Retro
+permissions:
+    RangedWolves.All:
+        description: Unrestricted RangedWolves access (including reload commands)
+        default: op
+        children:
+            RangedWolves.Reload: true
+            RangedWolves.Worlds: true
+            RangedWolves.Arenas: true
+            RangedWolves.Debug: true
+            RangedWolves.Retro: true
+    RangedWolves.Reload:
+        description: Allows use of /rw reload & /rw reloadMA
+        default: op
+    RangedWolves.Debug:
+        description: Allows use of /rw debug
+        default: op
+    RangedWolves.Retro:
+        description: Allows use of /rw retro
+        default: true
+    RangedWolves.Worlds:
+        description: Allows use of Ranged Wolves in any world
+        default: true
+    RangedWolves.Arenas:
+        description: Allows use of Ranged Wolves in any arena
+        default: true
