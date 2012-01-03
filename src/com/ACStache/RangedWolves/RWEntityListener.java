@@ -127,13 +127,8 @@ public class RWEntityListener extends EntityListener
             //else if the target is a player
             else if(newTarget instanceof Player)
             {
-                //if you manage to shoot yourself
-                if(player == (Player)newTarget)
-                {
-                    event.setCancelled(true);
-                }
-                //if you shoot another player
-                else
+                //if you shoot a player other than yourself
+                if(!(player == (Player)newTarget))
                 {
                     //if arena pvp is enabled
                     if(arenaPvP)
@@ -206,10 +201,14 @@ public class RWEntityListener extends EntityListener
             //if the target is a player
             else if(newTarget instanceof Player)
             {
-                //if world pvp is enabled
-                if(worldPvP)
+                //if you shoot another player other than yourself
+                if(!(player == (Player)newTarget))
                 {
-                    setWorldTarget(pets, newTarget);
+                    //if world pvp is enabled
+                    if(worldPvP)
+                    {
+                        setWorldTarget(pets, newTarget);
+                    }
                 }
             }
             //if the target is not a wolf or player
@@ -282,15 +281,19 @@ public class RWEntityListener extends EntityListener
             {
                 if(RangedWolves.am.getArenaWithPet(wolf) != null) {return;}
             }
-            //if the wolf isn't attached to a player, ignore it
-            if(!RWOwner.checkWorldWolf(wolf)) {return;}
-            
-            Player owner = (Player)wolf.getOwner();
-            //if there is an owner
-            if(owner != null)
+            //if the wolf has an owner
+            if(wolf.isTamed())
             {
-                //add it
-                RWOwner.addWolf(owner.getName(), wolf);
+                Player owner = (Player)wolf.getOwner();
+                //if there is an owner
+                if(owner != null)
+                {
+                    //if the wolf is already somehow associated with a player, ignore it
+                    if(RWOwner.checkWorldWolf(wolf)) {return;}
+                    
+                    //add it
+                    RWOwner.addWolf(owner.getName(), wolf);
+                }
             }
         }
     }

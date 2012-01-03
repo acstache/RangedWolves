@@ -48,7 +48,6 @@ public class RangedWolves extends JavaPlugin
         if(!dir.exists())
         {
             dir.mkdir();
-            log.info("[" + info.getName() + "] No config found. Generating a default config");
             RWConfig.loadConfig(file);
         }
         else
@@ -76,13 +75,9 @@ public class RangedWolves extends JavaPlugin
     
     private void setupMobArena()
     {
-        Plugin maPlugin = (MobArena)Bukkit.getServer().getPluginManager().getPlugin("MobArena");
-        
-        if(maPlugin == null) {return;}
-        
         maHandler = new MobArenaHandler();
         arenaListener = new RWArenaListener();
-        am = ((MobArena)maPlugin).getAM();
+        am = ((MobArena)Bukkit.getServer().getPluginManager().getPlugin("MobArena")).getAM();
     }
     
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
@@ -197,7 +192,7 @@ public class RangedWolves extends JavaPlugin
             else
             {
                 if(sender instanceof Player)
-                    ((Player)sender).sendMessage(ChatColor.AQUA + "Ranged Wolves version " + info.getVersion());
+                    ((Player)sender).sendMessage(ChatColor.AQUA + "RangedWolves version " + info.getVersion());
                 else
                     log.info("[" + info.getName() + "] version " + info.getVersion());
             }
