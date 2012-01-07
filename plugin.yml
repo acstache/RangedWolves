@@ -1,6 +1,6 @@
 name: RangedWolves
 main: com.ACStache.RangedWolves.RangedWolves
-version: 0.8.6
+version: 0.8.7
 author: ACStache
 description: Make Wolves attack your target on Ranged Attacks
 softdepend: [MobArena]
@@ -12,11 +12,6 @@ commands:
                /rw reload               - Reload the Configuration
                /rw reloadMA             - Rerun the Mob Arena setup code
                /rw retro                - Add any surrounding wolves to their respective owner
-        permission: RangedWolves.Reload
-        permission: RangedWolves.Worlds
-        permission: RangedWolves.Arenas
-        permission: RangedWolves.Debug
-        permission: RangedWolves.Retro
 permissions:
     RangedWolves.All:
         description: Unrestricted RangedWolves access (including reload commands)
