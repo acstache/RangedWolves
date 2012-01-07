@@ -30,7 +30,6 @@ public class RWConfig
     {
         config = new YamlConfiguration();
 
-        //prepare lists for use in config maps
         worlds = new ArrayList<World>(Bukkit.getServer().getWorlds());
         if(RangedWolves.maHandler != null)
         {
@@ -58,7 +57,6 @@ public class RWConfig
         }
         finally
         {
-            //set Worlds
             for(World w : worlds)
             {
                 if(!config.contains("RW-on-Server." + w.getName()))
@@ -70,7 +68,6 @@ public class RWConfig
             clearWorlds();
             setWorlds();
 
-            //set Arenas
             if(RangedWolves.maHandler != null)
             {
                 for(Arena a : arenas)
@@ -91,7 +88,6 @@ public class RWConfig
                 setArenas();
             }
             
-            //set Projectiles
             for(String p : projs)
             {
                 if(!config.contains("RW-Projectiles." + p))
@@ -103,7 +99,6 @@ public class RWConfig
             clearProjectiles();
             setProjectiles();
             
-            //remove Skeleton Tamers
             if(config.contains("RW-Skeleton-Tamers"))
             {
                 System.out.println("[RangedWolves] Removing Skeleton Tamers configuration options");
@@ -226,22 +221,50 @@ public class RWConfig
     //Getter Methods
     /**
      * Check if an arena is allowed to use RW
+     * If the arena has somehow not been added, add it with defaults
      * @param arena the arena being checked
      * @return true/false
      */
     public static boolean RWinArena(Arena arena)
     {
-        return arenaMap.get(arena).get(0);
+        if(arenaMap.get(arena) == null)
+        {
+            config.set("RW-in-MobArena." + arena.configName(), true);
+            System.out.println("[RangedWolves] Updating your config to include Arena: " + arena.configName());
+            return true;
+        }
+        else if(arenaMap.get(arena).isEmpty())
+        {
+            return false;
+        }
+        else
+        {
+            return arenaMap.get(arena).get(0);
+        }
     }
     
     /**
      * Check if a world is allowed to use RW
+     * If the world has somehow not been added, add it with defaults
      * @param world the world being checked
      * @return true/false
      */
     public static boolean RWinWorld(World world)
     {
-        return worldMap.get(world).get(0);
+        if(worldMap.get(world) == null)
+        {
+            config.set("RW-on-Server." + world.getName(), true);
+            System.out.println("[RangedWolves] Updating your config to include World: " + world.getName());
+            return true;
+        }
+        else if(worldMap.get(world).isEmpty())
+        {
+            return false;
+        }
+        else
+        {
+            return worldMap.get(world).get(0);
+        }
     }
     
     /**

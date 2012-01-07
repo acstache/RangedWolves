@@ -23,7 +23,6 @@ public class RWPlayerListener extends PlayerListener
     public void onPlayerTeleport(PlayerTeleportEvent event)
     {
         World world = event.getPlayer().getWorld();
-        //if the world has already been checked, ignore it
         if(worlds.contains(world)) {return;}
         
         for(LivingEntity e : world.getLivingEntities())

@@ -13,7 +13,7 @@ public class RWArenaChecker
     public static boolean isPlayerInArena(Player player)
     {
         if(RangedWolves.maHandler != null && RangedWolves.maHandler.isPlayerInArena(player))
-            return true; //Mob Arena found and player is in an arena
+            return true;
         else
             return false;
     }
@@ -21,7 +21,7 @@ public class RWArenaChecker
     public static boolean isMonsterInArena(LivingEntity entity)
     {
         if(RangedWolves.maHandler != null && RangedWolves.maHandler.isMonsterInArena(entity))
-            return true; //Mob Arena found and entity is in an arena
+            return true;
         else
             return false;
     }

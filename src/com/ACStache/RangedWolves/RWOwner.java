@@ -51,9 +51,9 @@ public class RWOwner
      */
     public static void addWolf(Arena arena, String playerName, Wolf wolf)
     {
-        if(arenaMap.get(arena) == null) //arena not found
+        if(arenaMap.get(arena) == null)
         {
-            if(arenaWolfMap.get(playerName) == null) //player not found in the arena (always true on just making a new arena key)
+            if(arenaWolfMap.get(playerName) == null)
             {
                 arenaWolfMap.put(playerName, new HashSet<Wolf>());
                 arenaMap.put(arena, arenaWolfMap);
@@ -65,7 +65,7 @@ public class RWOwner
         }
         else
         {
-            if(arenaWolfMap.get(playerName) == null) //player not found in the arena
+            if(arenaWolfMap.get(playerName) == null)
             {
                 arenaWolfMap.put(playerName, new HashSet<Wolf>());
                 if(!arenaWolfMap.get(playerName).contains(wolf))
@@ -105,8 +105,8 @@ public class RWOwner
      */
     public static boolean checkArenaWolf(Wolf wolf)
     {
-        for(Set<Wolf> set : arenaWolfMap.values()) //for each set of wolves
-            if(set.contains(wolf)) //if the set contains the wolf
+        for(Set<Wolf> set : arenaWolfMap.values())
+            if(set.contains(wolf))
                 return true; 
         return false;
     }
@@ -118,8 +118,8 @@ public class RWOwner
      */
     public static boolean checkWorldWolf(Wolf wolf)
     {
-        for(Set<Wolf> set : tamedWolfMap.values()) //for each set of wolves
-            if(set.contains(wolf)) //if the set contains the wolf
+        for(Set<Wolf> set : tamedWolfMap.values())
+            if(set.contains(wolf))
                 return true; 
         return false;
     }
@@ -131,9 +131,9 @@ public class RWOwner
      */
     public static Set<Wolf> getPets(Player player)
     {
-        if(RWArenaChecker.isPlayerInArena(player)) //if player is in an arena match
+        if(RWArenaChecker.isPlayerInArena(player))
             return arenaWolfMap.get(player.getName());
-        else //if player is NOT in an arena match
+        else
             return tamedWolfMap.get(player.getName());
     }
     
