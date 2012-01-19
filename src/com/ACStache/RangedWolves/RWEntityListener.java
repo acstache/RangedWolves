@@ -7,6 +7,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Egg;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Fireball;
@@ -65,6 +66,11 @@ public class RWEntityListener extends EntityListener
         if(proj instanceof ThrownPotion && !RWConfig.RWProj("Potions")) {return;}
         
         Player player = (Player)proj.getShooter();
+
+        if(newTarget instanceof Creeper && !RWConfig.RWCreepers())
+        {
+            if(!player.hasPermission("RangedWolves.Creep")) {return;}
+        }
         
         if(RWArenaChecker.isPlayerInArena(player))
         {

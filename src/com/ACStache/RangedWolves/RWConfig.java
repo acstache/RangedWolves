@@ -14,7 +14,9 @@ import com.garbagemule.MobArena.Arena;
 
 public class RWConfig
 {
-    private static YamlConfiguration config;
+    private static YamlConfiguration config = new YamlConfiguration();
+    private static File file;
+    private static boolean killCreepers;
     private static HashMap<World, ArrayList<Boolean>> worldMap = new HashMap<World, ArrayList<Boolean>>();
     private static List<World> worlds;
     private static HashMap<Arena, ArrayList<Boolean>> arenaMap = new HashMap<Arena, ArrayList<Boolean>>();
@@ -26,10 +28,13 @@ public class RWConfig
      * Load/reload/initialize the configuration file
      * @param file the configuration file
      */
-    public static void loadConfig(File file)
+    public static void loadConfig(File f)
     {
-        config = new YamlConfiguration();
-
+        file = f;
+        loadConfig();
+    }
+    public static void loadConfig()
+    {
         worlds = new ArrayList<World>(Bukkit.getServer().getWorlds());
         if(RangedWolves.maHandler != null)
         {
@@ -46,6 +51,7 @@ public class RWConfig
         {
             System.out.println("[RangedWolves] No config found. Generating a default config");
             
+            initCreeper();
             initWorlds();
             if(RangedWolves.maHandler != null)
                 initArenas();
@@ -57,6 +63,8 @@ public class RWConfig
         }
         finally
         {
+            killCreepers = config.getBoolean("RW-Creepers.Wolves-Attack");
+            
             for(World w : worlds)
             {
                 if(!config.contains("RW-on-Server." + w.getName()))
@@ -118,6 +126,13 @@ public class RWConfig
     
     
     //Initialize Methods
+    /**
+     * Initialize the configuration file with wolves default attacking creepers
+     */
+    private static void initCreeper()
+    {
+        config.set("RW-Creepers.Wolves-Attack", true);
+    }
     /**
      * Initialize the configuration file with any worlds found
      */
@@ -220,6 +235,15 @@ public class RWConfig
     
     //Getter Methods
     /**
+     * Check if Creepers are allowed to be attack by wolves.
+     * If true, wolves attack creepers.
+     */
+    public static boolean RWCreepers()
+    {
+        return killCreepers;
+    }
+    
+    /**
      * Check if an arena is allowed to use RW
      * If the arena has somehow not been added, add it with defaults
      * @param arena the arena being checked
@@ -230,6 +254,7 @@ public class RWConfig
         if(arenaMap.get(arena) == null)
         {
             config.set("RW-in-MobArena." + arena.configName(), true);
+            loadConfig();
             System.out.println("[RangedWolves] Updating your config to include Arena: " + arena.configName());
             return true;
         }
@@ -254,6 +279,7 @@ public class RWConfig
         if(worldMap.get(world) == null)
         {
             config.set("RW-on-Server." + world.getName(), true);
+            loadConfig();
             System.out.println("[RangedWolves] Updating your config to include World: " + world.getName());
             return true;
         }
