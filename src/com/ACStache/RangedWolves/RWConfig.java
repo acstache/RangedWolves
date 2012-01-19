@@ -63,6 +63,11 @@ public class RWConfig
         }
         finally
         {
+            if(!config.contains("RW-Creepers.Wolves-Attack"))
+            {
+                System.out.println("[RangedWolves] Updating your config to include attackable Creepers");
+                initCreeper();
+            }
             killCreepers = config.getBoolean("RW-Creepers.Wolves-Attack");
             
             for(World w : worlds)
