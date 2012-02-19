@@ -100,6 +100,7 @@ public class RangedWolves extends JavaPlugin
                     {
                         setupMobArena(mobArena);
                         log.info("[" + info.getName() + "] Mob Arena setup code rerun");
+                        RWConfig.loadConfig();
                     }
                 }
                 else if(args[0].equalsIgnoreCase("retro"))
