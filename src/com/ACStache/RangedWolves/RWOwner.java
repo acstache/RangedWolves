@@ -15,6 +15,7 @@ public class RWOwner
     private static HashMap<String,Set<Wolf>> arenaWolfMap = new HashMap<String,Set<Wolf>>();
     private static HashMap<String,Set<Wolf>> tamedWolfMap = new HashMap<String,Set<Wolf>>();
     
+    //adding methods
     /**
      * method to add wolves from onTameEntity and onCreatureSpawn events
      * @param player the player who gets the wolf
@@ -28,8 +29,6 @@ public class RWOwner
             if(!tamedWolfMap.get(playerName).contains(wolf))
             {
                 tamedWolfMap.get(playerName).add(wolf);
-                if(RWDebug.getDebug())
-                    System.out.println("[RangedWolves] Wolf " + wolf.getEntityId() + " added to Player " + playerName);
             }
         }
         else
@@ -37,8 +36,6 @@ public class RWOwner
             if(!tamedWolfMap.get(playerName).contains(wolf))
             {
                 tamedWolfMap.get(playerName).add(wolf);
-                if(RWDebug.getDebug())
-                    System.out.println("[RangedWolves] Wolf " + wolf.getEntityId() + " added to Player " + playerName);
             }
         }
     }
@@ -83,21 +80,8 @@ public class RWOwner
         }
     }
     
-    /**
-     * method to remove a wolf from a player's list of wolves if it dies
-     * @param player the player who just lost a pet
-     * @param wolf the wolf that just died
-     */
-    public static void removeWolf(String playerName, Wolf wolf)
-    {
-        if(tamedWolfMap.get(playerName).contains(wolf))
-        {
-            tamedWolfMap.get(playerName).remove(wolf);
-            if(RWDebug.getDebug())
-                System.out.println("[RangedWolves] Wolf " + wolf.getEntityId() + " removed from Player " + playerName);
-        }
-    }
     
+    //getter methods
     /**
      * checks a wolf versus all wolves that have been attached to a player
      * @param wolf the wolf being checked
@@ -135,6 +119,34 @@ public class RWOwner
             return arenaWolfMap.get(player.getName());
         else
             return tamedWolfMap.get(player.getName());
+    }
+    
+    /**
+     * returns the number of pets a given player has currently
+     * @param player
+     * @return
+     */
+    public static int getPetAmount(Player player)
+    {
+        if(!RWArenaChecker.isPlayerInArena(player))
+            return tamedWolfMap.get(player.getName()).size();
+        else
+            return RWConfig.RWMaxWolves();
+    }
+    
+    
+    //clear & remove methods
+    /**
+     * method to remove a wolf from a player's list of wolves if it dies
+     * @param player the player who just lost a pet
+     * @param wolf the wolf that just died
+     */
+    public static void removeWolf(String playerName, Wolf wolf)
+    {
+        if(tamedWolfMap.get(playerName).contains(wolf))
+        {
+            tamedWolfMap.get(playerName).remove(wolf);
+        }
     }
     
     /**

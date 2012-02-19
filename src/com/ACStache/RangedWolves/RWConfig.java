@@ -17,6 +17,7 @@ public class RWConfig
     private static YamlConfiguration config = new YamlConfiguration();
     private static File file;
     private static boolean killCreepers;
+    private static int maxWolves;
     private static HashMap<World, ArrayList<Boolean>> worldMap = new HashMap<World, ArrayList<Boolean>>();
     private static List<World> worlds;
     private static HashMap<Arena, ArrayList<Boolean>> arenaMap = new HashMap<Arena, ArrayList<Boolean>>();
@@ -35,11 +36,12 @@ public class RWConfig
     }
     public static void loadConfig()
     {
-        worlds = new ArrayList<World>(Bukkit.getServer().getWorlds());
+        worlds = new ArrayList<World>(Bukkit.getServer().getWorlds().size());
+        worlds = Bukkit.getServer().getWorlds();
         if(RangedWolves.maHandler != null)
         {
-            RangedWolves.am.initialize();
-            arenas = new ArrayList<Arena>(RangedWolves.am.getEnabledArenas());
+            arenas = new ArrayList<Arena>(RangedWolves.am.getEnabledArenas().size());
+            arenas = RangedWolves.am.getEnabledArenas();
         }
         addProjectiles();
         
@@ -52,6 +54,7 @@ public class RWConfig
             System.out.println("[RangedWolves] No config found. Generating a default config");
             
             initCreeper();
+            initMaxWolves();
             initWorlds();
             if(RangedWolves.maHandler != null)
                 initArenas();
@@ -69,6 +72,13 @@ public class RWConfig
                 initCreeper();
             }
             killCreepers = config.getBoolean("RW-Creepers.Wolves-Attack");
+            
+            if(!config.contains("RW-Max-Wolves.Amount"))
+            {
+                System.out.println("[RangedWolves] Updating your config to include Max Wolves cap");
+                initMaxWolves();
+            }
+            maxWolves = config.getInt("RW-Max-Wolves.Amount");
             
             for(World w : worlds)
             {
@@ -112,12 +122,6 @@ public class RWConfig
             clearProjectiles();
             setProjectiles();
             
-            if(config.contains("RW-Skeleton-Tamers"))
-            {
-                System.out.println("[RangedWolves] Removing Skeleton Tamers configuration options");
-                removeSkeles();
-            }
-            
             try
             {
                 config.save(file);
@@ -138,6 +142,15 @@ public class RWConfig
     {
         config.set("RW-Creepers.Wolves-Attack", true);
     }
+    
+    /**
+     * Initialize the max amount of wolves a player can have
+     */
+    private static void initMaxWolves()
+    {
+        config.set("RW-Max-Wolves.Amount", 5);
+    }
+    
     /**
      * Initialize the configuration file with any worlds found
      */
@@ -241,11 +254,20 @@ public class RWConfig
     //Getter Methods
     /**
      * Check if Creepers are allowed to be attack by wolves.
-     * If true, wolves attack creepers.
+     * @return If true, wolves attack creepers.
      */
     public static boolean RWCreepers()
     {
         return killCreepers;
+    }
+    
+    /**
+     * Check the max number of Wolves any player can have.
+     * @return the max number of Wolves a player can have
+     */
+    public static int RWMaxWolves()
+    {
+        return maxWolves;
     }
     
     /**
@@ -335,17 +357,5 @@ public class RWConfig
     public static void clearProjectiles()
     {
         projMap.clear();
-    }
-    
-    /**
-     * remove the Skeleton Tamer code, as it currently isn't possible to do
-     */
-    private static void removeSkeles()
-    {
-        config.set("RW-Skeleton-Tamers.Enabled", null);
-        config.set("RW-Skeleton-Tamers.MA-Enabled", null);
-        config.set("RW-Skeleton-Tamers.Chance", null);
-        config.set("RW-Skeleton-Tamers.Max-Pets", null);
-        config.set("RW-Skeleton-Tamers", null);
     }
 }

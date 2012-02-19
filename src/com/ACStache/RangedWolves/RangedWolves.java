@@ -10,11 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
-import org.bukkit.event.Event;
-import org.bukkit.event.Event.Priority;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.garbagemule.MobArena.ArenaMaster;
@@ -25,44 +21,29 @@ public class RangedWolves extends JavaPlugin
 {
     public static MobArenaHandler maHandler;
     public static ArenaMaster am;
+    private static MobArena mobArena;
     private Logger log = Logger.getLogger("Minecraft");
     private PluginDescriptionFile info;
     private static File dir, file;
-    private final RWEntityListener entityListener = new RWEntityListener(this);
-    private final RWPlayerListener playerListener = new RWPlayerListener(this);
-    @SuppressWarnings("unused")
-    private RWArenaListener arenaListener;
 
     public void onEnable()
     {
-        Plugin mobArena = Bukkit.getPluginManager().getPlugin("MobArena");
+        mobArena = (MobArena) Bukkit.getPluginManager().getPlugin("MobArena");
         if(mobArena != null && mobArena.isEnabled())
-            setupMobArena();
-        
-        info = getDescription();
-        
-        RWDebug.setDebug(false);
+            setupMobArena(mobArena);
         
         dir = getDataFolder();
         file = new File(dir, "config.yml");
         if(!dir.exists())
         {
             dir.mkdir();
-            RWConfig.loadConfig(file);
         }
-        else
-        {
-            RWConfig.loadConfig(file);
-        }
+        RWConfig.loadConfig(file);
         
+        info = getDescription();
         log.info("[" + info.getName() + "] " + info.getVersion() + " Enabled successfully! By: " + info.getAuthors());
         
-        PluginManager pm = getServer().getPluginManager();
-        pm.registerEvent(Event.Type.PLAYER_TELEPORT, playerListener, Priority.Normal, this);
-        pm.registerEvent(Event.Type.CREATURE_SPAWN, entityListener, Priority.Monitor, this);
-        pm.registerEvent(Event.Type.ENTITY_DAMAGE, entityListener, Priority.Monitor, this);
-        pm.registerEvent(Event.Type.ENTITY_DEATH, entityListener, Priority.Monitor, this);
-        pm.registerEvent(Event.Type.ENTITY_TAME, entityListener, Priority.Monitor, this);
+        this.getServer().getPluginManager().registerEvents(new RWListener(), this);
     }
 
     public void onDisable()
@@ -73,11 +54,10 @@ public class RangedWolves extends JavaPlugin
         log.info("[" + info.getName() + "] Successfully Disabled");
     }
     
-    private void setupMobArena()
+    private void setupMobArena(MobArena instance)
     {
         maHandler = new MobArenaHandler();
-        arenaListener = new RWArenaListener();
-        am = ((MobArena)Bukkit.getServer().getPluginManager().getPlugin("MobArena")).getAM();
+        am = instance.getArenaMaster();
     }
     
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
@@ -86,36 +66,11 @@ public class RangedWolves extends JavaPlugin
         {
             if(args.length >= 1)
             {
-                if(args[0].equalsIgnoreCase("debug"))
-                {
-                    if((sender instanceof Player && ((Player)sender).isOp()) || !(sender instanceof Player))
-                    {
-                        RWDebug.setDebug(!(RWDebug.getDebug()));
-                        if(sender instanceof Player && ((Player)sender).hasPermission("RangedWolves.Debug"))
-                        {
-                            if(RWDebug.getDebug())
-                                ((Player)sender).sendMessage(ChatColor.AQUA + "RW: Debug Mode Activated");
-                            else
-                                ((Player)sender).sendMessage(ChatColor.AQUA + "RW: Debug Mode Deactivated");
-                        }
-                        else
-                        {
-                            if(RWDebug.getDebug())
-                                log.info("[" + info.getName() + "] Debug Mode Activated");
-                            else
-                                log.info("[" + info.getName() + "] Debug Mode Deactivated");
-                        }
-                    }
-                    else
-                    {
-                        ((Player)sender).sendMessage(ChatColor.AQUA + "RW: You don't have permission to do that");
-                    }
-                }
-                else if(args[0].equalsIgnoreCase("reload"))
+                if(args[0].equalsIgnoreCase("reload"))
                 {
                     if((sender instanceof Player && ((Player)sender).hasPermission("RangedWolves.Reload")) || !(sender instanceof Player))
                     {
-                        RWConfig.loadConfig(file);
+                        RWConfig.loadConfig();
                         if(sender instanceof Player)
                             ((Player)sender).sendMessage(ChatColor.AQUA + "RW: Config reloaded");
                         else
@@ -132,9 +87,9 @@ public class RangedWolves extends JavaPlugin
                     {
                         if(sender instanceof Player && ((Player)sender).hasPermission("RangedWolves.Reload") || !(sender instanceof Player))
                         {
-                            setupMobArena();
+                            setupMobArena(mobArena);
                             ((Player)sender).sendMessage(ChatColor.AQUA + "RW: Mob Arena setup code rerun");
-                            RWConfig.loadConfig(file);
+                            RWConfig.loadConfig();
                         }
                         else
                         {
@@ -143,7 +98,7 @@ public class RangedWolves extends JavaPlugin
                     }
                     else
                     {
-                        setupMobArena();
+                        setupMobArena(mobArena);
                         log.info("[" + info.getName() + "] Mob Arena setup code rerun");
                     }
                 }
