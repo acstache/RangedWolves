@@ -39,6 +39,11 @@ public class RWListener implements Listener
     private MobArena mobArena;
     private HashSet<World> worlds = new HashSet<World>();
 
+    public RWListener(RangedWolves rangedWolves)
+    {
+        plugin = rangedWolves;
+    }
+
     /*
      * Entity Events
      */

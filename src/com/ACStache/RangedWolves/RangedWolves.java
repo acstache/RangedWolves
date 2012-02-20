@@ -43,7 +43,7 @@ public class RangedWolves extends JavaPlugin
         info = getDescription();
         log.info("[" + info.getName() + "] " + info.getVersion() + " Enabled successfully! By: " + info.getAuthors());
         
-        this.getServer().getPluginManager().registerEvents(new RWListener(), this);
+        this.getServer().getPluginManager().registerEvents(new RWListener(this), this);
     }
 
     public void onDisable()

@@ -18,6 +18,11 @@ public class RWArenaChecker
             return false;
     }
     
+    /**
+     * Checks to see if a monster is in a MobArena arena
+     * @param entity the LivingEntity being checked
+     * @return true or false
+     */
     public static boolean isMonsterInArena(LivingEntity entity)
     {
         if(RangedWolves.maHandler != null && RangedWolves.maHandler.isMonsterInArena(entity))
