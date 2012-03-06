@@ -26,7 +26,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-import org.bukkit.event.entity.EntityTargetEvent;
+//import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
@@ -303,7 +303,7 @@ public class RWListener implements Listener
         }
     }
     
-    @EventHandler
+    /*@EventHandler
     public void onEntityTarget(EntityTargetEvent event)
     {
         if(!(event.getEntity() instanceof Wolf)) {return;}
@@ -312,7 +312,7 @@ public class RWListener implements Listener
         if(!(RWOwner.checkWorldWolf(w)) || !(RWOwner.checkArenaWolf(w))) {return;}
         System.out.println("wolf changed target");
         RWTargetting.Target((HashSet<Wolf>)RWOwner.getPets((Player)w.getOwner()), (Player)w.getOwner());
-    }
+    }*/
     
     
     /*
