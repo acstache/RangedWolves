@@ -197,7 +197,8 @@ public class RWListener implements Listener
                 {
                     if(worldPvP)
                     {
-                        RWTargetting.addWorldTarget(pets, newTarget, player);
+                        //RWTargetting.addWorldTarget(pets, newTarget, player);
+                        setWorldTarget(pets, newTarget);
                     }
                 }
             }
