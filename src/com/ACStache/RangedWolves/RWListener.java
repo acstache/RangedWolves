@@ -261,7 +261,7 @@ public class RWListener implements Listener
                     if(!owner.hasPermission("RangedWolves.Unlimited"))
                     {
                         owner.sendMessage(ChatColor.AQUA + "RW: You don't have permission to have more than " + RWConfig.RWMaxWolves() + " wolves");
-                        return;
+                        event.setCancelled(true);
                     }
                 }
                 Wolf wolf = (Wolf)pet;
@@ -291,7 +291,11 @@ public class RWListener implements Listener
                     
                     if(RWOwner.getPetAmount(owner) >= RWConfig.RWMaxWolves())
                     {
-                        if(!owner.hasPermission("RangedWolves.Unlimited")) {return;}
+                        if(!owner.hasPermission("RangedWolves.Unlimited"))
+                        {
+                            wolf.setTamed(false);
+                            return;
+                        }
                     }
                     RWOwner.addWolf(owner.getName(), wolf);
                 }
@@ -346,7 +350,7 @@ public class RWListener implements Listener
                     {
                         if(RWOwner.getPetAmount(owner) >= RWConfig.RWMaxWolves())
                         {
-                            if(!owner.hasPermission("RangedWolves.Unlimited")) {return;}
+                            if(!owner.hasPermission("RangedWolves.Unlimited")) {continue;}
                         }
                      
                         RWOwner.addWolf(owner.getName(), wolf);
