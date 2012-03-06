@@ -7,7 +7,7 @@ import java.util.Set;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
 
-import com.garbagemule.MobArena.Arena;
+import com.garbagemule.MobArena.framework.Arena;
 
 public class RWOwner
 {
@@ -129,7 +129,15 @@ public class RWOwner
     public static int getPetAmount(Player player)
     {
         if(!RWArenaChecker.isPlayerInArena(player))
-            return tamedWolfMap.get(player.getName()).size();
+        {
+            if(tamedWolfMap.containsKey(player.getName()))
+                return tamedWolfMap.get(player.getName()).size();
+            else
+            {
+                tamedWolfMap.put(player.getName(), new HashSet<Wolf>());
+                return 0;
+            }
+        }
         else
             return RWConfig.RWMaxWolves();
     }

@@ -13,7 +13,7 @@ import org.bukkit.entity.Wolf;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.garbagemule.MobArena.ArenaMaster;
+import com.garbagemule.MobArena.framework.ArenaMaster;
 import com.garbagemule.MobArena.MobArena;
 import com.garbagemule.MobArena.MobArenaHandler;
 

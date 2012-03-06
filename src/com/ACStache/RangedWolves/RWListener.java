@@ -26,11 +26,15 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.EntityTargetEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
-import com.garbagemule.MobArena.Arena;
+import com.garbagemule.MobArena.framework.Arena;
 import com.garbagemule.MobArena.MobArena;
 import com.garbagemule.MobArena.events.ArenaEndEvent;
+import com.garbagemule.MobArena.events.ArenaPlayerDeathEvent;
+import com.garbagemule.MobArena.events.ArenaPlayerLeaveEvent;
 import com.garbagemule.MobArena.events.ArenaStartEvent;
 
 public class RWListener implements Listener
@@ -104,6 +108,7 @@ public class RWListener implements Listener
                     {
                         if(arenaPvP)
                         {
+                            //RWTargetting.addArenaTarget(pets, newTarget, player);
                             setArenaTarget(pets, newTarget);
                         }
                         else
@@ -114,6 +119,7 @@ public class RWListener implements Listener
                 }
                 else
                 {
+                    //RWTargetting.addArenaTarget(pets, newTarget, player);
                     setArenaTarget(pets, newTarget);
                 }
             }
@@ -123,6 +129,7 @@ public class RWListener implements Listener
                 {
                     if(arenaPvP)
                     {
+                        //RWTargetting.addArenaTarget(pets, newTarget, player);
                         setArenaTarget(pets, newTarget);
                     }
                     else
@@ -133,6 +140,7 @@ public class RWListener implements Listener
             }
             else
             {
+                //RWTargetting.addArenaTarget(pets, newTarget, player);
                 setArenaTarget(pets, newTarget);
             }
         }
@@ -162,11 +170,13 @@ public class RWListener implements Listener
                             }
                             else
                             {
+                                //RWTargetting.addWorldTarget(pets, newTarget, player);
                                 setWorldTarget(pets, newTarget);
                             }
                         }
                         else
                         {
+                            //RWTargetting.addWorldTarget(pets, newTarget, player);
                             setWorldTarget(pets, newTarget);
                         }
                     }
@@ -177,6 +187,7 @@ public class RWListener implements Listener
                 }
                 else
                 {
+                    //RWTargetting.addWorldTarget(pets, newTarget, player);
                     setWorldTarget(pets, newTarget);
                 }
             }
@@ -186,12 +197,13 @@ public class RWListener implements Listener
                 {
                     if(worldPvP)
                     {
-                        setWorldTarget(pets, newTarget);
+                        RWTargetting.addWorldTarget(pets, newTarget, player);
                     }
                 }
             }
             else
             {
+                //RWTargetting.addWorldTarget(pets, newTarget, player);
                 setWorldTarget(pets, newTarget);
             }
         }
@@ -200,7 +212,9 @@ public class RWListener implements Listener
     @EventHandler
     public void onEntityDeath(EntityDeathEvent event)
     {
-        Entity dead = event.getEntity();
+        if(!(event.getEntity() instanceof LivingEntity)) {return;}
+        
+        LivingEntity dead = (LivingEntity)event.getEntity();
         if(dead instanceof Wolf)
         {
             Wolf wolf = (Wolf)dead;
@@ -228,6 +242,8 @@ public class RWListener implements Listener
                 }
             }
         }
+        
+        RWTargetting.removeTarget(dead);
     }
     
     @EventHandler
@@ -282,10 +298,27 @@ public class RWListener implements Listener
         }
     }
     
+    @EventHandler
+    public void onEntityTarget(EntityTargetEvent event)
+    {
+        if(!(event.getEntity() instanceof Wolf)) {return;}
+        Wolf w = (Wolf)event.getEntity();
+        
+        if(!(RWOwner.checkWorldWolf(w)) || !(RWOwner.checkArenaWolf(w))) {return;}
+        System.out.println("wolf changed target");
+        RWTargetting.Target((HashSet<Wolf>)RWOwner.getPets((Player)w.getOwner()), (Player)w.getOwner());
+    }
+    
     
     /*
      * Player Events
      */
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent event)
+    {
+        RWTargetting.clearTargets(event.getEntity());
+    }
+    
     @EventHandler
     public void onPlayerTeleport(PlayerTeleportEvent event)
     {
@@ -350,42 +383,44 @@ public class RWListener implements Listener
         RWOwner.clearWolves(event.getArena());
     }
     
+    @EventHandler
+    public void onArenaPlayerDeath(ArenaPlayerDeathEvent event)
+    {
+        RWTargetting.clearArenaTargets(event.getPlayer());
+    }
+    
+    @EventHandler
+    public void onArenaPlayerLeave(ArenaPlayerLeaveEvent event)
+    {
+        RWTargetting.clearArenaTargets(event.getPlayer());
+    }
+    
     
     /*
-     * Extra methods
-     */
-    
-    /**
-     * Set the Wolves target in an Arena
-     * @param pets the pets of the Tamer
-     * @param target the Entity being attacked
+     * Extra methods for targetting purposes
      */
     private void setArenaTarget(HashSet<Wolf> pets, LivingEntity target)
     {
         if(pets == null) {return;}
-        
         for(Wolf w : pets)
         {
             if(w.isSitting())
             {
                 w.setSitting(false);
             }
-            w.setTarget(target);
+            if(w.getTarget() == null)
+            {
+                w.setTarget(target);
+            }
         }
     }
     
-    /**
-     * Set the Wolves target in a World
-     * @param pets the pets of the Tamer
-     * @param target the Entity being attacked
-     */
     private void setWorldTarget(HashSet<Wolf> pets, LivingEntity target)
     {
         if(pets == null) {return;}
-    
         for(Wolf w : pets)
         {
-            if(!w.isSitting())
+            if(!w.isSitting() && w.getTarget() == null)
             {
                 w.setTarget(target);
             }

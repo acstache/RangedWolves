@@ -10,7 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import com.garbagemule.MobArena.Arena;
+import com.garbagemule.MobArena.framework.Arena;
 
 public class RWConfig
 {
