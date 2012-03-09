@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
@@ -28,7 +29,7 @@ public class RangedWolves extends JavaPlugin
 
     public void onEnable()
     {
-        mobArena = (MobArena) Bukkit.getPluginManager().getPlugin("MobArena");
+        mobArena = (MobArena)Bukkit.getPluginManager().getPlugin("MobArena");
         if(mobArena != null && mobArena.isEnabled())
             setupMobArena(mobArena);
         
@@ -83,54 +84,54 @@ public class RangedWolves extends JavaPlugin
                 }
                 else if(args[0].equalsIgnoreCase("reloadMA"))
                 {
-                    if(sender instanceof Player)
+                    mobArena = (MobArena)Bukkit.getServer().getPluginManager().getPlugin("MobArena");
+                    if(sender instanceof Player && ((Player)sender).hasPermission("RangedWolves.Reload") || !(sender instanceof Player))
                     {
-                        if(sender instanceof Player && ((Player)sender).hasPermission("RangedWolves.Reload") || !(sender instanceof Player))
+                        if(mobArena != null && mobArena.isEnabled())
                         {
                             setupMobArena(mobArena);
-                            ((Player)sender).sendMessage(ChatColor.AQUA + "RW: Mob Arena setup code rerun");
                             RWConfig.loadConfig();
-                        }
-                        else
-                        {
-                            ((Player)sender).sendMessage(ChatColor.AQUA + "RW: You don't have permission to do that");
+                            if(sender instanceof Player)
+                                ((Player)sender).sendMessage(ChatColor.AQUA + "RW: Mob Arena setup code rerun");
+                            else
+                                log.info("[" + info.getName() + "] Mob Arena setup code rerun");
                         }
                     }
                     else
                     {
-                        setupMobArena(mobArena);
-                        log.info("[" + info.getName() + "] Mob Arena setup code rerun");
-                        RWConfig.loadConfig();
+                        ((Player)sender).sendMessage(ChatColor.AQUA + "RW: You don't have permission to do that");
                     }
                 }
                 else if(args[0].equalsIgnoreCase("retro"))
                 {
                     if(sender instanceof Player && ((Player)sender).hasPermission("RangedWolves.Retro"))
                     {
-                        Player player = (Player)sender;
                         int wolvesAdded = 0;
-                        
-                        for(Entity e : player.getNearbyEntities(20, 20, 20)) //check a box (radius of 20) around the player
+                        for(Entity e : ((Player)sender).getNearbyEntities(20, 20, 20))
                         {
-                            if(e instanceof Wolf)
+                            if(!(e instanceof Wolf)) {continue;}
+                            Wolf wolf = (Wolf)e;
+                            if(RWOwner.checkWorldWolf(wolf)) {continue;}
+                            if(wolf.getOwner() == null) {continue;}
+                            if(wolf.getOwner() instanceof Player)
                             {
-                                Wolf wolf = (Wolf)e;
-                                if(!RWOwner.checkWorldWolf(wolf)) //if wolf is not part of the known pets
-                                {
-                                    Player owner = (Player)wolf.getOwner();
-                                    if(owner != null) //wolf has an owner
-                                    {
-                                        RWOwner.addWolf(owner.getName(), wolf);
-                                        wolvesAdded++;
-                                    }
-                                }
+                                if(RWOwner.getPetAmount((Player)wolf.getOwner()) >= RWConfig.RWMaxWolves())
+                                    if(!((Player)wolf.getOwner()).hasPermission("RangedWolves.Unlimited")){continue;}
+                                
+                                RWOwner.addWolf(((Player)wolf.getOwner()).getName(), wolf);
                             }
+                            else
+                            {
+                                if(RWOwner.getPetAmount((OfflinePlayer)wolf.getOwner()) >= RWConfig.RWMaxWolves()) {continue;}
+                                RWOwner.addWolf(((OfflinePlayer)wolf.getOwner()).getName(), wolf);
+                            }
+                            wolvesAdded++;
                         }
                         
                         if(wolvesAdded != 0)
-                            player.sendMessage(ChatColor.AQUA + "RW: " + wolvesAdded + " wolves added to their owners");
+                            ((Player)sender).sendMessage(ChatColor.AQUA + "RW: " + wolvesAdded + " wolves added to their owners");
                         else
-                            player.sendMessage(ChatColor.AQUA + "RW: No new wolves added");
+                            ((Player)sender).sendMessage(ChatColor.AQUA + "RW: No new wolves added");
                     }
                     else
                     {

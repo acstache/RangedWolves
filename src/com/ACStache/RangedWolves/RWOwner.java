@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
 
@@ -123,8 +124,8 @@ public class RWOwner
     
     /**
      * returns the number of pets a given player has currently
-     * @param player
-     * @return
+     * @param player the player
+     * @return the current number of wolves owned and recorded
      */
     public static int getPetAmount(Player player)
     {
@@ -140,6 +141,22 @@ public class RWOwner
         }
         else
             return RWConfig.RWMaxWolves();
+    }
+    
+    /**
+     * returns the number of pets a given offline player has currently
+     * @param oPlayer the offline player
+     * @return the current number of wolves owned & recorded
+     */
+    public static int getPetAmount(OfflinePlayer oPlayer)
+    {
+        if(tamedWolfMap.containsKey(oPlayer.getName()))
+            return tamedWolfMap.get(oPlayer.getName()).size();
+        else
+        {
+            tamedWolfMap.put(oPlayer.getName(), new HashSet<Wolf>());
+            return 0;
+        }
     }
     
     
