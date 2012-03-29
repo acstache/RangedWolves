@@ -1,6 +1,6 @@
 name: RangedWolves
 main: com.ACStache.RangedWolves.RangedWolves
-version: 1.0.2
+version: 1.1
 author: ACStache
 description: Make Wolves attack your target on Ranged Attacks
 softdepend: [MobArena]
@@ -38,5 +38,5 @@ permissions:
         description: Allows use of Ranged Wolves in any arena
         default: true
     RangedWolves.Creep:
-        description: Override's config option to not have wolves attack creepers
+        description: Overrides config option to not have wolves attack creepers
         default: false

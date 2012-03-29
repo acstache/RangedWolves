@@ -1,9 +1,11 @@
 package com.ACStache.RangedWolves;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Random;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.entity.Arrow;
@@ -22,26 +24,23 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTameEvent;
-import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-//import org.bukkit.event.entity.EntityTargetEvent;
-//import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.EntityTargetEvent.TargetReason;
+import org.bukkit.event.entity.EntityTargetEvent;
+import org.bukkit.event.entity.PotionSplashEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 import com.garbagemule.MobArena.framework.Arena;
-import com.garbagemule.MobArena.MobArena;
 import com.garbagemule.MobArena.events.ArenaEndEvent;
-//import com.garbagemule.MobArena.events.ArenaPlayerDeathEvent;
-//import com.garbagemule.MobArena.events.ArenaPlayerLeaveEvent;
 import com.garbagemule.MobArena.events.ArenaStartEvent;
 
 public class RWListener implements Listener
 {
-    private RangedWolves plugin;
-    private MobArena mobArena;
+    private static HashMap<Projectile, String> projectiles = new HashMap<Projectile, String>();
     private HashSet<World> worlds = new HashSet<World>();
+    private RangedWolves plugin;
 
     public RWListener(RangedWolves rangedWolves)
     {
@@ -51,144 +50,111 @@ public class RWListener implements Listener
     /*
      * Entity Events
      */
-    @EventHandler
-    public void onEntityDamage(EntityDamageEvent event)
+    @EventHandler(ignoreCancelled = true)
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event)
     {
-        if(event.isCancelled()) {return;}
+        Entity damagee = event.getEntity();
+        if(!(damagee instanceof LivingEntity)) {return;}
         
-        Entity target = event.getEntity();
-        if(!(target instanceof LivingEntity)) {return;}
+        Entity damager = event.getDamager();
+        if(!(damager instanceof Projectile)) {return;}
 
-        LivingEntity newTarget = (LivingEntity)target;
+        LivingEntity target = (LivingEntity)damagee;
         
-        DamageCause damager = target.getLastDamageCause().getCause();
-        if(damager != DamageCause.PROJECTILE) {return;}
+        Projectile proj = (Projectile)damager;
+        if(!isProjBeingTracked(proj)) {return;}
+        Player player = plugin.getServer().getPlayer(removeProjectile(proj));
+        if(player == null) {return;}
+        if(RWOwner.getPets(player) == null) {return;}
+        HashSet<Wolf> pets = (HashSet<Wolf>)RWOwner.getPets(player);
         
-        Entity cause = ((EntityDamageByEntityEvent)event).getDamager();
-        if(!(cause instanceof Projectile)) {return;}
-        
-        Projectile proj = (Projectile)cause;
-        if(!(proj.getShooter() instanceof Player)) {return;}
-    
-        if(proj instanceof Arrow && !RWConfig.RWProj("Arrow")) {return;}
-        if(proj instanceof Egg && !RWConfig.RWProj("Egg")) {return;}
-        if(proj instanceof Fireball && !RWConfig.RWProj("Fireball")) {return;}
-        if(proj instanceof SmallFireball && !RWConfig.RWProj("Small-Fireball")) {return;}
-        if(proj instanceof Snowball && !RWConfig.RWProj("Snowball")) {return;}
-        if(proj instanceof ThrownPotion && !RWConfig.RWProj("Potions")) {return;}
-        
-        Player player = (Player)proj.getShooter();
-
-        if(newTarget instanceof Creeper && !RWConfig.RWCreepers())
-        {
+        if(target instanceof Creeper && !RWConfig.RWCreepers()) {
             if(!player.hasPermission("RangedWolves.Creep")) {return;}
         }
         
         if(RWArenaChecker.isPlayerInArena(player))
-        {
-            if(!player.hasPermission("RangedWolves.Arenas")) {return;}
+            onEDBEinArena(event, target, player, pets);
+        else
+            onEDBEinWorld(event, target, player, pets);
+    }
+    
+    private void onEDBEinArena(EntityDamageByEntityEvent event, LivingEntity target, Player player, HashSet<Wolf> pets)
+    {
+        if(!player.hasPermission("RangedWolves.Arenas")) {return;}
+        
+        Arena arena = RangedWolves.getAM().getArenaWithPlayer(player);
+        boolean arenaPvP = arena.getSettings().getBoolean("pvp-enabled");
+        
+        if(!RWConfig.RWinArena(arena)) {return;}
+        
+        if(target instanceof Wolf) {
+            Wolf wolf = (Wolf)target;
             
-            Arena arena = RangedWolves.am.getArenaWithPlayer(player);
-            boolean arenaPvP = arena.getSettings().getBoolean("pvp-enabled");
-            HashSet<Wolf> pets = (HashSet<Wolf>)RWOwner.getPets(player);
-            
-            if(!RWConfig.RWinArena(arena)) {return;}
-            
-            if(newTarget instanceof Wolf)
-            {
-                Wolf wolf = (Wolf)newTarget;
-                
-                if(RWOwner.checkArenaWolf(wolf))
-                {
-                    if(player.equals((Player)wolf.getOwner()))
-                    {
+            if(RWOwner.checkArenaWolf(wolf)) {
+                if(!arenaPvP) {return;}
+                if(wolf.getOwner() instanceof Player) {
+                    if(player.equals((Player)wolf.getOwner())) {
                         event.setCancelled(true);
                     }
-                    else
-                    {
-                        if(!arenaPvP) {return;}
-                        //RWTargetting.addArenaTarget(pets, newTarget, player);
-                        setArenaTarget(pets, newTarget);
+                    else {
+                        setTarget(pets, target, true);
                     }
                 }
-                else
-                {
-                    //RWTargetting.addArenaTarget(pets, newTarget, player);
-                    setArenaTarget(pets, newTarget);
+                else {
+                    setTarget(pets, target, true);
                 }
             }
-            else if(newTarget instanceof Player)
-            {
-                if(player.equals((Player)newTarget)) {return;}
-                if(!arenaPvP) {return;}
-                //RWTargetting.addArenaTarget(pets, newTarget, player);
-                setArenaTarget(pets, newTarget);
-            }
-            else
-            {
-                //RWTargetting.addArenaTarget(pets, newTarget, player);
-                setArenaTarget(pets, newTarget);
+            else {
+                setTarget(pets, target, true);
             }
         }
-        else
-        {
-            if(!player.hasPermission("RangedWolves.Worlds")) {return;}
+        else if(target instanceof Player) {
+            if(player.equals((Player)target)) {return;}
+            if(!arenaPvP) {return;}
+            setTarget(pets, target, true);
+        }
+        else {
+            setTarget(pets, target, true);
+        }
+    }
+    
+    private void onEDBEinWorld(EntityDamageByEntityEvent event, LivingEntity target, Player player, HashSet<Wolf> pets)
+    {
+        if(!player.hasPermission("RangedWolves.Worlds")) {return;}
             
-            World world = player.getWorld();
-            HashSet<Wolf> pets = (HashSet<Wolf>)RWOwner.getPets(player);
-            boolean worldPvP = world.getPVP();
+        World world = player.getWorld();
+        boolean worldPvP = world.getPVP();
+        
+        if(!RWConfig.RWinWorld(world)) {return;}
+        
+        if(target instanceof Wolf) {
+            Wolf wolf = (Wolf)target;
             
-            if(!RWConfig.RWinWorld(world)) {return;}
-            
-            if(newTarget instanceof Wolf)
-            {
-                Wolf wolf = (Wolf)newTarget;
-                
-                if(RWOwner.checkWorldWolf(wolf))
-                {
-                    if(worldPvP)
-                    {
-                        if(wolf.getOwner() instanceof Player)
-                        {
-                            if(player.equals((Player)wolf.getOwner()))
-                            {
-                                event.setCancelled(true);
-                            }
-                            else
-                            {
-                                //RWTargetting.addWorldTarget(pets, newTarget, player);
-                                setWorldTarget(pets, newTarget);
-                            }
-                        }
-                        else
-                        {
-                            //RWTargetting.addWorldTarget(pets, newTarget, player);
-                            setWorldTarget(pets, newTarget);
-                        }
-                    }
-                    else
-                    {
+            if(RWOwner.checkWorldWolf(wolf)) {
+                if(!worldPvP) {return;}
+                if(wolf.getOwner() instanceof Player) {
+                    if(player.equals((Player)wolf.getOwner())) {
                         event.setCancelled(true);
                     }
+                    else {
+                        setTarget(pets, target, false);
+                    }
                 }
-                else
-                {
-                    //RWTargetting.addWorldTarget(pets, newTarget, player);
-                    setWorldTarget(pets, newTarget);
+                else {
+                    setTarget(pets, target, false);
                 }
             }
-            else if(newTarget instanceof Player)
-            {
-                if(player.equals((Player)newTarget)) {return;}
-                if(!worldPvP) {return;}
-                //RWTargetting.addWorldTarget(pets, newTarget, player);
-                setWorldTarget(pets, newTarget);
+            else {
+                setTarget(pets, target, false);
             }
-            else
-            {
-                //RWTargetting.addWorldTarget(pets, newTarget, player);
-                setWorldTarget(pets, newTarget);
-            }
+        }
+        else if(target instanceof Player) {
+            if(player.equals((Player)target)) {return;}
+            if(!worldPvP) {return;}
+            setTarget(pets, target, false);
+        }
+        else {
+            setTarget(pets, target, false);
         }
     }
     
@@ -196,131 +162,152 @@ public class RWListener implements Listener
     public void onEntityDeath(EntityDeathEvent event)
     {
         if(!(event.getEntity() instanceof LivingEntity)) {return;}
-        
         LivingEntity dead = (LivingEntity)event.getEntity();
-        if(dead instanceof Wolf)
-        {
-            Wolf wolf = (Wolf)dead;
-            if(mobArena != null && mobArena.isEnabled())
-            {
-                if(RangedWolves.am.getArenaWithPet(wolf) != null) {return;}
-            }
-            if(!RWOwner.checkWorldWolf(wolf)) {return;}
-            if(wolf.getOwner() == null) {return;}
-            if(wolf.getOwner() instanceof OfflinePlayer)
-            {
-                OfflinePlayer offPlayer = (OfflinePlayer)wolf.getOwner();
-                RWOwner.removeWolf(offPlayer.getName(), wolf);
-            }
-            else
-            {
-                Player owner = (Player)wolf.getOwner();
-                RWOwner.removeWolf(owner.getName(), wolf);
-                owner.sendMessage(ChatColor.AQUA + "RW: You've lost a wolf");
-            }
-        }
+        if(!(dead instanceof Wolf)) {return;}
+        Wolf wolf = (Wolf)dead;
         
-        RWTargetting.removeTarget(dead);
+        if(RangedWolves.getMA() != null && RangedWolves.getMA().isEnabled()) {
+            if(RangedWolves.getAM().getArenaWithPet(wolf) != null) {return;}
+        }
+        if(!RWOwner.checkWorldWolf(wolf)) {return;}
+        if(wolf.getOwner() == null) {return;}
+        
+        if(wolf.getOwner() instanceof OfflinePlayer) {
+            OfflinePlayer offPlayer = (OfflinePlayer)wolf.getOwner();
+            RWOwner.removeWolf(offPlayer.getName(), wolf);
+        }
+        else {
+            Player owner = (Player)wolf.getOwner();
+            RWOwner.removeWolf(owner.getName(), wolf);
+            RangedWolves.printToPlayer(owner, "You've lost a wolf");
+        }
     }
     
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onEntityTame(EntityTameEvent event)
     {
         Entity pet = event.getEntity();
-        if(event.getOwner() instanceof Player)
-        {
+        if(event.getOwner() instanceof Player) {
             Player owner = (Player)event.getOwner();
-            if(pet instanceof Wolf)
-            {
-                if(RWOwner.getPetAmount(owner) >= RWConfig.RWMaxWolves())
-                {
-                    if(!owner.hasPermission("RangedWolves.Unlimited"))
-                    {
-                        owner.sendMessage(ChatColor.AQUA + "RW: You don't have permission to have more than " + RWConfig.RWMaxWolves() + " wolves");
+            if(pet instanceof Wolf) {
+                if(RWOwner.getPetAmount(owner) >= RWConfig.RWMaxWolves()) {
+                    if(!owner.hasPermission("RangedWolves.Unlimited")) {
+                        RangedWolves.printToPlayer(owner, "You don't have permission to have more than " + RWConfig.RWMaxWolves() + " wolves");
                         event.setCancelled(true);
                         return;
                     }
                 }
                 Wolf wolf = (Wolf)pet;
                 RWOwner.addWolf(owner.getName(), wolf);
-                owner.sendMessage(ChatColor.AQUA + "RW: You've tamed a wolf");
+                RangedWolves.printToPlayer(owner, "You've tamed a wolf");
             }
         }
     }
     
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onCreatureSpawn(CreatureSpawnEvent event)
     {
         Entity spawn = event.getEntity();
-        if(spawn instanceof Wolf)
-        {
-            Wolf wolf = (Wolf)spawn;
-            if(mobArena != null && mobArena.isEnabled())
-            {
-                if(RangedWolves.am.getArenaWithPet(wolf) != null) {return;}
-            }
-            if(wolf.isTamed())
-            {
-                Player owner = (Player)wolf.getOwner();
-                if(owner != null)
-                {
-                    if(RWOwner.checkWorldWolf(wolf)) {return;}
-                    
-                    if(RWOwner.getPetAmount(owner) >= RWConfig.RWMaxWolves())
-                    {
-                        if(!owner.hasPermission("RangedWolves.Unlimited"))
-                        {
-                            wolf.setTamed(false);
-                            return;
-                        }
-                    }
-                    RWOwner.addWolf(owner.getName(), wolf);
+        if(!(spawn instanceof Wolf)) {return;}
+        Wolf wolf = (Wolf)spawn;
+        if(!wolf.isTamed()) {return;}
+        
+        if(RangedWolves.getMA() != null && RangedWolves.getMA().isEnabled()) {
+            if(RangedWolves.getAM().getArenaWithPet(wolf) != null) {return;}
+        }
+        
+        Player owner = (Player)wolf.getOwner();
+        if(owner != null) {
+            if(RWOwner.checkWorldWolf(wolf)) {return;}
+            
+            if(RWOwner.getPetAmount(owner) >= RWConfig.RWMaxWolves()) {
+                if(!owner.hasPermission("RangedWolves.Unlimited")) {
+                    wolf.setTamed(false);
+                    return;
                 }
             }
+            RWOwner.addWolf(owner.getName(), wolf);
         }
     }
     
-    /*@EventHandler
-    public void onEntityTarget(EntityTargetEvent event)
+    
+    /*
+     * Projectile stuff
+     */
+    @EventHandler(ignoreCancelled = true)
+    public void onProjectileLaunch(ProjectileLaunchEvent event)
     {
-        if(!(event.getEntity() instanceof Wolf)) {return;}
-        Wolf w = (Wolf)event.getEntity();
+        Projectile proj = event.getEntity();
         
-        if(!(RWOwner.checkWorldWolf(w)) || !(RWOwner.checkArenaWolf(w))) {return;}
-        System.out.println("wolf changed target");
-        RWTargetting.Target((HashSet<Wolf>)RWOwner.getPets((Player)w.getOwner()), (Player)w.getOwner());
-    }*/
+        if(proj instanceof Arrow && !RWConfig.RWProj("Arrow")) {return;}
+        if(proj instanceof Egg && !RWConfig.RWProj("Egg")) {return;}
+        if(proj instanceof Fireball && !RWConfig.RWProj("Fireball")) {return;}
+        if(proj instanceof SmallFireball && !RWConfig.RWProj("Small-Fireball")) {return;}
+        if(proj instanceof Snowball && !RWConfig.RWProj("Snowball")) {return;}
+        if(proj instanceof ThrownPotion && !RWConfig.RWProj("Potions")) {return;}
+        
+        if(proj.getShooter() instanceof Player)
+            addProjectile(proj, ((Player)proj.getShooter()).getName());
+    }
+    
+    @EventHandler(ignoreCancelled = true)
+    public void onPotionSplash(PotionSplashEvent event)
+    {
+        ThrownPotion potion = event.getPotion();
+        if(!isProjBeingTracked((Projectile)potion)) {return;}
+        Player player = plugin.getServer().getPlayer(removeProjectile((Projectile)potion));
+        if(RWOwner.getPets(player) == null) {return;}
+        HashSet<Wolf> pets = (HashSet<Wolf>)RWOwner.getPets(player);
+        
+        Arena arena = RWArenaChecker.getArenaAtLocation(potion.getLocation());
+        boolean inArena = (arena == null) ? false : true;
+        
+        HashSet<LivingEntity> affected = (HashSet<LivingEntity>)event.getAffectedEntities();
+        ArrayList<LivingEntity> targets = new ArrayList<LivingEntity>(affected.size());
+        LivingEntity target = null;
+        
+        for(LivingEntity le : affected) {
+            if(!inArena) {
+                if(le instanceof Player && player.getWorld().getPVP() && !le.equals(player))
+                    targets.add(le);
+                else if(!(le instanceof Player))
+                    targets.add(le);
+            }
+            else {
+                if(le instanceof Player && arena.getSettings().getBoolean("pvp-enabled") && !le.equals(player))
+                    targets.add(le);
+                else if(!(le instanceof Player))
+                    targets.add(le);
+            }
+        }
+        if(targets.isEmpty()) {return;}
+
+        Random rand = new Random();
+        target = targets.get(rand.nextInt(targets.size()));
+        setTarget(pets, target, inArena);
+    }
     
     
     /*
      * Player Events
      */
-    /*@EventHandler
-    public void onPlayerDeath(PlayerDeathEvent event)
-    {
-        RWTargetting.clearTargets(event.getEntity());
-    }*/
-    
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerTeleport(PlayerTeleportEvent event)
     {
         World world = event.getPlayer().getWorld();
         if(worlds.contains(world)) {return;}
 
-        for(LivingEntity e : world.getLivingEntities())
-        {
+        for(LivingEntity e : world.getLivingEntities()) {
             if(!(e instanceof Wolf)) {continue;}
             Wolf wolf = (Wolf)e;
             if(wolf.getOwner() == null) {continue;}
             
-            if(wolf.getOwner() instanceof OfflinePlayer)
-            {
+            if(wolf.getOwner() instanceof OfflinePlayer) {
                 OfflinePlayer offPlayer = (OfflinePlayer)wolf.getOwner();
                 if(RWOwner.getPetAmount(offPlayer) >= RWConfig.RWMaxWolves()) {continue;}
                 RWOwner.addWolf(offPlayer.getName(), wolf);
             }
-            else
-            {
+            else {
                 Player owner = (Player)wolf.getOwner();
                 if(RWOwner.getPetAmount(owner) >= RWConfig.RWMaxWolves())
                     if(!owner.hasPermission("RangedWolves.Unlimited")) {continue;}
@@ -328,7 +315,6 @@ public class RWListener implements Listener
                 RWOwner.addWolf(owner.getName(), wolf);
             }
         }
-        
         worlds.add(world);
     }
     
@@ -340,10 +326,8 @@ public class RWListener implements Listener
     public void onArenaStart(ArenaStartEvent event)
     {
         final Arena arena = event.getArena();
-        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable()
-        {
-            public void run()
-            {
+        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+            public void run() {
                 HashSet<Wolf> pets = (HashSet<Wolf>)arena.getMonsterManager().getPets();
                 if(!(pets == null))
                     for (Wolf w : pets)
@@ -358,47 +342,48 @@ public class RWListener implements Listener
         RWOwner.clearWolves(event.getArena());
     }
     
-    /*@EventHandler
-    public void onArenaPlayerDeath(ArenaPlayerDeathEvent event)
-    {
-        RWTargetting.clearArenaTargets(event.getPlayer());
-    }
-    
-    @EventHandler
-    public void onArenaPlayerLeave(ArenaPlayerLeaveEvent event)
-    {
-        RWTargetting.clearArenaTargets(event.getPlayer());
-    }*/
-    
     
     /*
-     * Extra methods for targetting purposes
+     * Projectile Tracking
      */
-    private void setArenaTarget(HashSet<Wolf> pets, LivingEntity target)
+    private void addProjectile(Projectile proj, String pName)
     {
-        if(pets == null) {return;}
-        for(Wolf w : pets)
-        {
-            if(w.isSitting())
-            {
-                w.setSitting(false);
-            }
-            if(w.getTarget() == null)
-            {
-                w.setTarget(target);
-            }
-        }
+        if(!isProjBeingTracked(proj))
+            projectiles.put(proj, pName);
     }
     
-    private void setWorldTarget(HashSet<Wolf> pets, LivingEntity target)
+    private String removeProjectile(Projectile proj)
     {
-        if(pets == null) {return;}
-        for(Wolf w : pets)
-        {
-            if(!w.isSitting() && w.getTarget() == null)
-            {
-                w.setTarget(target);
+        return projectiles.remove(proj);
+    }
+    
+    private boolean isProjBeingTracked(Projectile proj)
+    {
+        return projectiles.containsKey(proj);
+    }
+    
+    public static void clearProjectiles()
+    {
+        projectiles.clear();
+    }
+    
+    /*
+     * Setting Targets
+     */
+    private void setTarget(HashSet<Wolf> pets, LivingEntity target, boolean inArena)
+    {
+        for(Wolf w : pets) {
+            if(w.isSitting()) {
+                if(inArena)
+                    w.setSitting(false);
+                else
+                    continue;
             }
+            
+            EntityTargetEvent ete = new EntityTargetEvent(w, target, TargetReason.OWNER_ATTACKED_TARGET);
+            plugin.getServer().getPluginManager().callEvent(ete);
+            if(!ete.isCancelled())
+                w.setTarget(target);
         }
     }
 }

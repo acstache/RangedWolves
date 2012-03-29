@@ -10,7 +10,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import com.garbagemule.MobArena.MobArenaHandler;
 import com.garbagemule.MobArena.framework.Arena;
+import com.garbagemule.MobArena.framework.ArenaMaster;
 
 public class RWConfig
 {
@@ -24,6 +26,8 @@ public class RWConfig
     private static List<Arena> arenas;
     private static HashMap<String, ArrayList<Boolean>> projMap = new HashMap<String, ArrayList<Boolean>>();
     private static List<String> projs = new ArrayList<String>(6);
+    private static MobArenaHandler maHandler;
+    private static ArenaMaster am;
     
     /**
      * Load/reload/initialize the configuration file
@@ -38,10 +42,13 @@ public class RWConfig
     {
         worlds = new ArrayList<World>(Bukkit.getServer().getWorlds().size());
         worlds = Bukkit.getServer().getWorlds();
-        if(RangedWolves.maHandler != null)
+        
+        am = RangedWolves.getAM();
+        maHandler = RangedWolves.getMAH();
+        if(maHandler != null)
         {
-            arenas = new ArrayList<Arena>(RangedWolves.am.getEnabledArenas().size());
-            arenas = RangedWolves.am.getEnabledArenas();
+            arenas = new ArrayList<Arena>(am.getEnabledArenas().size());
+            arenas = am.getEnabledArenas();
         }
         addProjectiles();
         
@@ -51,31 +58,31 @@ public class RWConfig
         }
         catch (FileNotFoundException e)
         {
-            System.out.println("[RangedWolves] No config found. Generating a default config");
+            RangedWolves.printToConsole("No config found. Generating a default config");
             
             initCreeper();
             initMaxWolves();
             initWorlds();
-            if(RangedWolves.maHandler != null)
+            if(maHandler != null)
                 initArenas();
             initProjectiles();
         }
         catch (Exception e)
         {
-            System.out.println("[RangedWolves] An Error has occured. Try deleting your config and reloading RangedWolves");
+            RangedWolves.printToConsole("An Error has occured. Try deleting your config and reloading RangedWolves");
         }
         finally
         {
             if(!config.contains("RW-Creepers.Wolves-Attack"))
             {
-                System.out.println("[RangedWolves] Updating your config to include attackable Creepers");
+                RangedWolves.printToConsole("Updating your config to include attackable Creepers");
                 initCreeper();
             }
             killCreepers = config.getBoolean("RW-Creepers.Wolves-Attack");
             
             if(!config.contains("RW-Max-Wolves.Amount"))
             {
-                System.out.println("[RangedWolves] Updating your config to include Max Wolves cap");
+                RangedWolves.printToConsole("Updating your config to include Max Wolves cap");
                 initMaxWolves();
             }
             maxWolves = config.getInt("RW-Max-Wolves.Amount");
@@ -84,26 +91,26 @@ public class RWConfig
             {
                 if(!config.contains("RW-on-Server." + w.getName()))
                 {
-                    System.out.println("[RangedWolves] Updating your config to include World: " + w.getName());
+                    RangedWolves.printToConsole("Updating your config to include World: " + w.getName());
                     config.set("RW-on-Server." + w.getName(), true);
                 }
             }
             clearWorlds();
             setWorlds();
 
-            if(RangedWolves.maHandler != null)
+            if(maHandler != null)
             {
                 for(Arena a : arenas)
                 {
                     if(!config.contains("RW-in-MobArena." + a.configName()) && config.contains("RW-in-MobArena." + a.arenaName()))
                     {
-                        System.out.println("[RangedWolves] Editing your config to include Arena: " + a.configName() + " instead of: " + a.arenaName());
+                        RangedWolves.printToConsole("Editing your config to include Arena: " + a.configName() + " instead of: " + a.arenaName());
                         config.set("RW-in-MobArena." + a.configName(), config.getBoolean("RW-in-MobArena." + a.arenaName(), true));
                         config.set("RW-in-MobArena." + a.arenaName(), null);
                     }
                     else if(!config.contains("RW-in-MobArena." + a.configName()))
                     {
-                        System.out.println("[RangedWolves] Updating your config to include Arena: " + a.configName());
+                        RangedWolves.printToConsole("Updating your config to include Arena: " + a.configName());
                         config.set("RW-in-MobArena." + a.configName(), true);
                     }
                 }
@@ -115,7 +122,7 @@ public class RWConfig
             {
                 if(!config.contains("RW-Projectiles." + p))
                 {
-                    System.out.println("[RangedWolves] Updating your config to include Projectile: " + p);
+                    RangedWolves.printToConsole("Updating your config to include Projectile: " + p);
                     config.set("RW-Projectiles." + p, true);
                 }
             }
@@ -128,7 +135,7 @@ public class RWConfig
             }
             catch (Exception e)
             {
-                System.out.println("[RangedWolves] An Error has occured. Try deleting your config and reloading RangedWolves");
+                RangedWolves.printToConsole("An Error has occured. Try deleting your config and reloading RangedWolves");
             }
         }
     }
@@ -166,7 +173,7 @@ public class RWConfig
     private static void initArenas()
     {
         for(Arena a : arenas)
-            config.set("RW-in-MobArena." + a.arenaName(), true);
+            config.set("RW-in-MobArena." + a.configName(), true);
     }
     
     /**
@@ -282,7 +289,7 @@ public class RWConfig
         {
             config.set("RW-in-MobArena." + arena.configName(), true);
             loadConfig();
-            System.out.println("[RangedWolves] Updating your config to include Arena: " + arena.configName());
+            RangedWolves.printToConsole("Updating your config to include Arena: " + arena.configName());
             return true;
         }
         else if(arenaMap.get(arena).isEmpty())
@@ -307,7 +314,7 @@ public class RWConfig
         {
             config.set("RW-on-Server." + world.getName(), true);
             loadConfig();
-            System.out.println("[RangedWolves] Updating your config to include World: " + world.getName());
+            RangedWolves.printToConsole("Updating your config to include World: " + world.getName());
             return true;
         }
         else if(worldMap.get(world).isEmpty())
